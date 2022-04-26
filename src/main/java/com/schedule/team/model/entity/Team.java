@@ -5,6 +5,7 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -29,6 +30,9 @@ public class Team {
     @Column(name = "creation_date")
     private LocalDate creationDate;
 
+    @ManyToOne
+    private User admin;
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "team_to_user",
@@ -40,6 +44,14 @@ public class Team {
             inverseForeignKey = @ForeignKey(name = "user_fkey")
     )
     private Set<User> users;
+
+    public Team(String name, LocalDate creationDate, User admin) {
+        this.name = name;
+        this.creationDate = creationDate;
+        this.admin = admin;
+        this.users = new HashSet<>();
+        this.users.add(admin);
+    }
 
     public void addUser(User user) {
         this.users.add(user);
