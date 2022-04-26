@@ -10,5 +10,4 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class GetTeamByIdResponse {
     private TeamDTO team;
-    private String color;
 }

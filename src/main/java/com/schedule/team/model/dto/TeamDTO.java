@@ -19,4 +19,5 @@ public class TeamDTO {
     private LocalDate creationDate;
     private User admin;
     private List<User> members;
+    private String color;
 }

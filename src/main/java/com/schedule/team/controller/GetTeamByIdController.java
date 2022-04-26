@@ -61,9 +61,9 @@ public class GetTeamByIdController {
                                 team.getName(),
                                 team.getCreationDate(),
                                 team.getAdmin(),
-                                members
-                        ),
-                        color
+                                members,
+                                color
+                        )
                 )
         );
     }

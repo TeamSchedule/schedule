@@ -1,6 +1,5 @@
 package com.schedule.team.controller;
 
-import com.schedule.team.model.dto.TeamColorDTO;
 import com.schedule.team.model.dto.TeamDTO;
 import com.schedule.team.model.entity.Team;
 import com.schedule.team.model.entity.TeamColor;
@@ -35,18 +34,16 @@ public class GetTeamsController {
     public ResponseEntity<GetTeamsResponse> get(HttpServletRequest request) {
         Long userId = extractClaimsFromRequestService.extract(request).getId();
         List<TeamColor> teamColors = getTeamColorsByUserIdService.get(userId);
-        List<TeamColorDTO> teamColorDTOS = teamColors
+        List<TeamDTO> teamColorDTOS = teamColors
                 .stream()
                 .map(teamColor -> {
                     Team team = teamColor.getTeam();
-                    return new TeamColorDTO(
-                            new TeamDTO(
-                                    team.getId(),
-                                    team.getName(),
-                                    team.getCreationDate(),
-                                    team.getAdmin(),
-                                    team.getTeamColors().stream().map(TeamColor::getUser).toList()
-                            ),
+                    return new TeamDTO(
+                            team.getId(),
+                            team.getName(),
+                            team.getCreationDate(),
+                            team.getAdmin(),
+                            team.getTeamColors().stream().map(TeamColor::getUser).toList(),
                             teamColor.getColor()
                     );
                 }).toList();
