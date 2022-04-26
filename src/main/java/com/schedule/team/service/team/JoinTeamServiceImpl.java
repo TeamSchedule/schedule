@@ -16,7 +16,6 @@ public class JoinTeamServiceImpl implements JoinTeamService {
     @Override
     @Transactional
     public void join(Team team, User user) {
-        team.addUser(user);
         createTeamColorService.create(team, user);
     }
 }
