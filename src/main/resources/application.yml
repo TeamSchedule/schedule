@@ -1,0 +1,23 @@
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://${POSTGRES_HOSTS}/${POSTGRES_DB}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PWD}
+  mvc:
+    pathmatch:
+      matching-strategy: ant-path-matcher
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+app:
+  team:
+    color:
+      default: "#000000"
+  jwt:
+    tokenHeaderName: "Authorization"
+    tokenStart: "Bearer "
