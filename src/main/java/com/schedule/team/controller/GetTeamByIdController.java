@@ -4,7 +4,8 @@ import com.schedule.team.model.entity.TeamColor;
 import com.schedule.team.model.response.GetTeamByIdResponse;
 import com.schedule.team.service.jwt.ExtractClaimsFromRequestService;
 import com.schedule.team.service.team_color.GetTeamColorService;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,10 +16,19 @@ import javax.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/team")
-@RequiredArgsConstructor
 public class GetTeamByIdController {
     private final GetTeamColorService getTeamColorService;
     private final ExtractClaimsFromRequestService extractClaimsFromRequestService;
+
+    @Autowired
+    public GetTeamByIdController(
+            GetTeamColorService getTeamColorService,
+            @Qualifier("extractClaimsFromRequestServiceCreateUserIfAbsent")
+                    ExtractClaimsFromRequestService extractClaimsFromRequestService
+    ) {
+        this.getTeamColorService = getTeamColorService;
+        this.extractClaimsFromRequestService = extractClaimsFromRequestService;
+    }
 
     @GetMapping("/{teamId}")
     public ResponseEntity<?> get(

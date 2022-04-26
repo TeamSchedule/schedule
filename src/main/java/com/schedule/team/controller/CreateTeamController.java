@@ -8,7 +8,8 @@ import com.schedule.team.model.response.CreateTeamResponse;
 import com.schedule.team.service.jwt.ExtractClaimsFromRequestService;
 import com.schedule.team.service.team.CreateTeamService;
 import com.schedule.team.service.user.GetUserByIdService;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,11 +22,22 @@ import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/team")
-@RequiredArgsConstructor
 public class CreateTeamController {
     private final ExtractClaimsFromRequestService extractClaimsFromRequestService;
     private final GetUserByIdService getUserByIdService;
     private final CreateTeamService createTeamService;
+
+    @Autowired
+    public CreateTeamController(
+            @Qualifier("extractClaimsFromRequestServiceCreateUserIfAbsent")
+                    ExtractClaimsFromRequestService extractClaimsFromRequestService,
+            GetUserByIdService getUserByIdService,
+            CreateTeamService createTeamService
+    ) {
+        this.extractClaimsFromRequestService = extractClaimsFromRequestService;
+        this.getUserByIdService = getUserByIdService;
+        this.createTeamService = createTeamService;
+    }
 
     @PostMapping
     public ResponseEntity<CreateTeamResponse> create(
