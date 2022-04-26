@@ -50,7 +50,6 @@ public class Team {
         this.creationDate = creationDate;
         this.admin = admin;
         this.users = new HashSet<>();
-        this.users.add(admin);
     }
 
     public void addUser(User user) {

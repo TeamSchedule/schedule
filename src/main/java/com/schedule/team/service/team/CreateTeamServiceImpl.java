@@ -12,15 +12,18 @@ import java.time.LocalDate;
 @RequiredArgsConstructor
 public class CreateTeamServiceImpl implements CreateTeamService {
     private final TeamRepository teamRepository;
+    private final JoinTeamService joinTeamService;
 
     @Override
     public Team create(String name, LocalDate creationDate, User user) {
-        return teamRepository.save(
+        Team team = teamRepository.save(
                 new Team(
                         name,
                         creationDate,
                         user
                 )
         );
+        joinTeamService.join(team, user);
+        return team;
     }
 }

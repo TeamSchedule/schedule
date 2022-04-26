@@ -15,6 +15,9 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
     database-platform: org.hibernate.dialect.PostgreSQLDialect
 app:
+  team:
+    color:
+      default: "#000000"
   jwt:
     tokenHeaderName: "Authorization"
     tokenStart: "Bearer "
