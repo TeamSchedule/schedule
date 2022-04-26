@@ -1,14 +1,15 @@
 package com.schedule.team.model.response;
 
-import com.schedule.team.model.dto.TeamDTO;
+import com.schedule.team.model.dto.TeamColorDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class GetTeamByIdResponse {
-    private TeamDTO team;
-    private String color;
+public class GetTeamsResponse {
+    private List<TeamColorDTO> teamColors;
 }

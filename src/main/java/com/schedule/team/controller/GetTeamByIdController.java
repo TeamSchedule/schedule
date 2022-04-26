@@ -1,6 +1,6 @@
 package com.schedule.team.controller;
 
-import com.schedule.team.model.TeamDTO;
+import com.schedule.team.model.dto.TeamDTO;
 import com.schedule.team.model.entity.Team;
 import com.schedule.team.model.entity.TeamColor;
 import com.schedule.team.model.entity.User;

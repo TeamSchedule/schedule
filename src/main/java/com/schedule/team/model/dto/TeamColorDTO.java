@@ -1,6 +1,5 @@
-package com.schedule.team.model.response;
+package com.schedule.team.model.dto;
 
-import com.schedule.team.model.dto.TeamDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class GetTeamByIdResponse {
+public class TeamColorDTO {
     private TeamDTO team;
     private String color;
 }

@@ -1,4 +1,4 @@
-package com.schedule.team.model;
+package com.schedule.team.model.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.schedule.team.model.entity.User;
