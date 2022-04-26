@@ -11,5 +11,5 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class GetTeamsResponse {
-    private List<TeamColorDTO> teamColors;
+    private List<TeamColorDTO> teams;
 }
