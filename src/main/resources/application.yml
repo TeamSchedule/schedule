@@ -21,3 +21,5 @@ app:
   jwt:
     tokenHeaderName: "Authorization"
     tokenStart: "Bearer "
+server:
+  port: ${SERVER_PORT}
