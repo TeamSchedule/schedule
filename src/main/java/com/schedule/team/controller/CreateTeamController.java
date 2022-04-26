@@ -28,7 +28,7 @@ public class CreateTeamController {
     private final CreateTeamService createTeamService;
 
     @PostMapping
-    public ResponseEntity<?> create(
+    public ResponseEntity<CreateTeamResponse> create(
             @RequestBody CreateTeamRequest createTeamRequest,
             HttpServletRequest request
     ) {
