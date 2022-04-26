@@ -13,7 +13,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
-public class ExtractClaimsServiceImpl implements ExtractClaimsService {
+public class ExtractClaimsFromTokenServiceImpl implements ExtractClaimsFromTokenService {
     private final ObjectMapper objectMapper;
 
     @Override
