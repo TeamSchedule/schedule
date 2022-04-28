@@ -3,10 +3,9 @@ package com.schedule.team.controller;
 import com.schedule.team.model.dto.TeamDTO;
 import com.schedule.team.model.entity.Team;
 import com.schedule.team.model.entity.TeamColor;
-import com.schedule.team.model.entity.User;
 import com.schedule.team.model.response.GetTeamByIdResponse;
 import com.schedule.team.service.jwt.ExtractClaimsFromRequestService;
-import com.schedule.team.service.team.GetTeamByIdService;
+import com.schedule.team.service.team_color.GetTeamColorByUserIdAndTeamIdService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
@@ -16,22 +15,20 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
-import java.util.List;
 
 @RestController
 @RequestMapping("/team")
 public class GetTeamByIdController {
-    private final GetTeamByIdService getTeamByIdService;
+    private final GetTeamColorByUserIdAndTeamIdService getTeamColorByUserIdAndTeamIdService;
     private final ExtractClaimsFromRequestService extractClaimsFromRequestService;
 
     @Autowired
     public GetTeamByIdController(
-            GetTeamByIdService getTeamByIdService,
+            GetTeamColorByUserIdAndTeamIdService getTeamColorByUserIdAndTeamIdService,
             @Qualifier("extractClaimsFromRequestServiceCreateUserIfAbsent")
                     ExtractClaimsFromRequestService extractClaimsFromRequestService
     ) {
-        this.getTeamByIdService = getTeamByIdService;
+        this.getTeamColorByUserIdAndTeamIdService = getTeamColorByUserIdAndTeamIdService;
         this.extractClaimsFromRequestService = extractClaimsFromRequestService;
     }
 
@@ -40,19 +37,9 @@ public class GetTeamByIdController {
             @PathVariable Long teamId,
             HttpServletRequest request
     ) {
-        Team team = getTeamByIdService.get(teamId);
-        Long userId = extractClaimsFromRequestService
-                .extract(request)
-                .getId();
-
-        List<User> members = new ArrayList<>();
-        String color = null;
-        for (TeamColor teamColor : team.getTeamColors()) {
-            if (teamColor.getUser().getId().equals(userId)) {
-                color = teamColor.getColor();
-            }
-            members.add(teamColor.getUser());
-        }
+        Long userId = extractClaimsFromRequestService.extract(request).getId();
+        TeamColor teamColor = getTeamColorByUserIdAndTeamIdService.get(teamId, userId);
+        Team team = teamColor.getTeam();
 
         return ResponseEntity.ok().body(
                 new GetTeamByIdResponse(
@@ -61,8 +48,8 @@ public class GetTeamByIdController {
                                 team.getName(),
                                 team.getCreationDate(),
                                 team.getAdmin(),
-                                members,
-                                color
+                                team.getTeamColors().stream().map(TeamColor::getUser).toList(),
+                                teamColor.getColor()
                         )
                 )
         );

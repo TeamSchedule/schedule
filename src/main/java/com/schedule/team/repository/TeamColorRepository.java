@@ -11,5 +11,5 @@ import java.util.List;
 public interface TeamColorRepository extends CrudRepository<TeamColor, TeamColorKey> {
     List<TeamColor> findAllByUserId(Long userId);
 
-    TeamColor findByTeamIdAndUserId(Long teamId, Long userId);
+    TeamColor findByUserIdAndTeamId(Long userId, Long teamId);
 }
