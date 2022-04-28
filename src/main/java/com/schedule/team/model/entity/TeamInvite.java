@@ -37,4 +37,18 @@ public class TeamInvite {
     @Column(name = "invite_status")
     @Enumerated(value = EnumType.STRING)
     private TeamInviteStatus inviteStatus;
+
+    public TeamInvite(
+            Team team,
+            User invited,
+            User inviting,
+            LocalDateTime date,
+            TeamInviteStatus inviteStatus
+    ) {
+        this.team = team;
+        this.invited = invited;
+        this.inviting = inviting;
+        this.date = date;
+        this.inviteStatus = inviteStatus;
+    }
 }

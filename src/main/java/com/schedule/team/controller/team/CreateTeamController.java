@@ -1,4 +1,4 @@
-package com.schedule.team.controller;
+package com.schedule.team.controller.team;
 
 import com.schedule.team.model.UserClaims;
 import com.schedule.team.model.entity.Team;
