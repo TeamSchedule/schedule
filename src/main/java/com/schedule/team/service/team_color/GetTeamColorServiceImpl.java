@@ -12,6 +12,6 @@ public class GetTeamColorServiceImpl implements GetTeamColorService {
 
     @Override
     public TeamColor get(Long teamId, Long userId) {
-        return teamColorRepository.findByTeamIdAndUserId(teamId, userId);
+        return teamColorRepository.findByUserIdAndTeamId(userId, teamId);
     }
 }
