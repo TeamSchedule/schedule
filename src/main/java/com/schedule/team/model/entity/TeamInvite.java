@@ -1,5 +1,6 @@
 package com.schedule.team.model.entity;
 
+import com.schedule.team.model.TeamInviteStatus;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 

@@ -1,8 +1,8 @@
 package com.schedule.team.service.team_invite;
 
+import com.schedule.team.model.TeamInviteStatus;
 import com.schedule.team.model.entity.Team;
 import com.schedule.team.model.entity.TeamInvite;
-import com.schedule.team.model.entity.TeamInviteStatus;
 import com.schedule.team.model.entity.User;
 import com.schedule.team.repository.TeamInviteRepository;
 import lombok.RequiredArgsConstructor;
