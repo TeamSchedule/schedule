@@ -4,6 +4,7 @@ import com.schedule.team.service.jwt.ExtractClaimsFromRequestService;
 import com.schedule.team.service.team.GetTeamByIdService;
 import com.schedule.team.service.team.LeaveTeamService;
 import com.schedule.team.service.user.GetUserByIdService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -21,6 +22,7 @@ public class LeaveTeamController {
     private final GetTeamByIdService getTeamByIdService;
     private final GetUserByIdService getUserByIdService;
 
+    @Autowired
     public LeaveTeamController(
             LeaveTeamService leaveTeamService,
             @Qualifier("extractClaimsFromRequestServiceImpl")
