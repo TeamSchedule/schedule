@@ -6,5 +6,6 @@ import lombok.Data;
 @Data
 public class PatchTeamInviteRequest {
     private Long id;
+    // TODO: validation
     private TeamInviteStatus status;
 }
