@@ -10,6 +10,7 @@ import com.schedule.team.model.entity.User;
 import com.schedule.team.model.request.CreateTeamInviteRequest;
 import com.schedule.team.model.request.PatchTeamInviteRequest;
 import com.schedule.team.model.response.GetTeamInvitesResponse;
+import com.schedule.team.service.jwt.ExtractClaimsFromRequestService;
 import com.schedule.team.service.jwt.ExtractUserFromRequestService;
 import com.schedule.team.service.team.GetTeamByIdService;
 import com.schedule.team.service.team.JoinTeamService;
@@ -31,6 +32,7 @@ import java.util.List;
 @RequestMapping("/team/invite")
 @RequiredArgsConstructor
 public class TeamInviteController {
+    private final ExtractClaimsFromRequestService extractClaimsFromRequestService;
     private final GetTeamByIdService getTeamByIdService;
     private final ExtractUserFromRequestService extractUserFromRequestService;
     private final GetUserByIdService getUserByIdService;
@@ -46,8 +48,8 @@ public class TeamInviteController {
             HttpServletRequest request
     ) {
         Team team = getTeamByIdService.get(createTeamInviteRequest.getTeamId());
-        // TODO: dont request user from db. use id from token instead
         User inviting = extractUserFromRequestService.extract(request);
+
         List<User> invitedList = createTeamInviteRequest
                 .getInvitedIds()
                 .stream()
@@ -70,10 +72,9 @@ public class TeamInviteController {
             @RequestParam GetTeamInviteCriteria criteria,
             HttpServletRequest request
     ) {
-        // TODO: dont request user from db. use id from token instead
-        User user = extractUserFromRequestService.extract(request);
+        Long userId = extractClaimsFromRequestService.extract(request).getId();
 
-        List<TeamInvite> teamInvites = getTeamInvitesByUserService.get(user.getId(), criteria);
+        List<TeamInvite> teamInvites = getTeamInvitesByUserService.get(userId, criteria);
 
         return ResponseEntity.ok().body(
                 new GetTeamInvitesResponse(

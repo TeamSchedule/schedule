@@ -11,9 +11,10 @@ import java.util.List;
 
 @Repository
 public interface TaskRepository extends JpaRepository<Task, Long> {
-    List<Task> findByExpirationTimeBetweenAndTeamIn(
-            LocalDateTime expirationTime,
-            LocalDateTime expirationTime2,
-            Collection<Team> team
+    List<Task> findByExpirationTimeBetweenAndTeamInAndAssignee_Id(
+            LocalDateTime from,
+            LocalDateTime to,
+            Collection<Team> team,
+            Long assigneeId
     );
 }

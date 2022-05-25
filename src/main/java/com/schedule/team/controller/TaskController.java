@@ -7,6 +7,7 @@ import com.schedule.team.model.entity.User;
 import com.schedule.team.model.request.CreateTaskRequest;
 import com.schedule.team.model.request.PatchTaskRequest;
 import com.schedule.team.model.response.CreateTaskResponse;
+import com.schedule.team.service.jwt.ExtractClaimsFromRequestService;
 import com.schedule.team.service.jwt.ExtractUserFromRequestService;
 import com.schedule.team.service.task.*;
 import com.schedule.team.service.team.GetTeamByIdService;
@@ -26,6 +27,7 @@ import java.util.stream.Collectors;
 @RequestMapping("/task")
 @RequiredArgsConstructor
 public class TaskController {
+    private final ExtractClaimsFromRequestService extractClaimsFromRequestService;
     private final ExtractUserFromRequestService extractUserFromRequestService;
     private final GetUserByIdService getUserByIdService;
     private final CreateTaskService createTaskService;
@@ -40,7 +42,6 @@ public class TaskController {
             @RequestBody CreateTaskRequest createTaskRequest,
             HttpServletRequest request
     ) {
-        // TODO: dont request user from db. use id from token instead
         User creator = extractUserFromRequestService.extract(request);
         User assignee = getUserByIdService.get(createTaskRequest.getAssigneeId());
         Team team = getTeamByIdService.get(createTaskRequest.getTeamId());
@@ -96,7 +97,7 @@ public class TaskController {
         return getTasksInRangeService.getTasksInRange(
                 from,
                 to,
-                extractUserFromRequestService.extract(request),
+                extractClaimsFromRequestService.extract(request).getId(),
                 teams
         );
     }

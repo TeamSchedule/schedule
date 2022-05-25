@@ -10,6 +10,7 @@ import com.schedule.team.model.request.PatchTeamRequest;
 import com.schedule.team.model.response.CreateTeamResponse;
 import com.schedule.team.model.response.GetTeamByIdResponse;
 import com.schedule.team.model.response.GetTeamsResponse;
+import com.schedule.team.service.jwt.ExtractClaimsFromRequestService;
 import com.schedule.team.service.jwt.ExtractUserFromRequestService;
 import com.schedule.team.service.team.CreateTeamService;
 import com.schedule.team.service.team.GetTeamByIdService;
@@ -31,6 +32,7 @@ import java.util.List;
 @RequestMapping("/team")
 @RequiredArgsConstructor
 public class TeamController {
+    private final ExtractClaimsFromRequestService extractClaimsFromRequestService;
     private final GetTeamColorsByUserIdService getTeamColorsByUserIdService;
     private final GetTeamColorByUserIdAndTeamIdService getTeamColorByUserIdAndTeamIdService;
     private final ExtractUserFromRequestService extractUserFromRequestService;
@@ -45,7 +47,6 @@ public class TeamController {
             @RequestBody CreateTeamRequest createTeamRequest,
             HttpServletRequest request
     ) {
-        // TODO: dont request user from db. use id from token instead
         User creator = extractUserFromRequestService.extract(request);
         Team team = createTeamService.create(
                 createTeamRequest.getName(),
@@ -64,9 +65,8 @@ public class TeamController {
             @PathVariable Long teamId,
             HttpServletRequest request
     ) {
-        // TODO: dont request user from db. use id from token instead
-        User user = extractUserFromRequestService.extract(request);
-        TeamColor teamColor = getTeamColorByUserIdAndTeamIdService.get(teamId, user.getId());
+        Long userId = extractUserFromRequestService.extract(request).getId();
+        TeamColor teamColor = getTeamColorByUserIdAndTeamIdService.get(teamId, userId);
         Team team = teamColor.getTeam();
 
         return ResponseEntity.ok().body(
@@ -85,9 +85,8 @@ public class TeamController {
 
     @GetMapping
     public ResponseEntity<GetTeamsResponse> get(HttpServletRequest request) {
-        // TODO: dont request user from db. use id from token instead
-        User user = extractUserFromRequestService.extract(request);
-        List<TeamColor> teamColors = getTeamColorsByUserIdService.get(user.getId());
+        Long userId = extractClaimsFromRequestService.extract(request).getId();
+        List<TeamColor> teamColors = getTeamColorsByUserIdService.get(userId);
 
         List<TeamDescriptionDTO> teamDescriptionDTOS = teamColors
                 .stream()
@@ -112,7 +111,6 @@ public class TeamController {
     ) {
         leaveTeamService.leave(
                 getTeamByIdService.get(teamId),
-                // TODO: dont request user from db. use id from token instead
                 extractUserFromRequestService.extract(request)
         );
         return ResponseEntity.noContent().build();
@@ -131,9 +129,8 @@ public class TeamController {
         }
 
         if (patchTeamRequest.getColor() != null) {
-            // TODO: dont request user from db. use id from token instead
-            User user = extractUserFromRequestService.extract(request);
-            updateTeamColorService.update(teamId, user.getId(), patchTeamRequest.getColor());
+            Long userId = extractClaimsFromRequestService.extract(request).getId();
+            updateTeamColorService.update(teamId, userId, patchTeamRequest.getColor());
         }
 
         return ResponseEntity.ok().build();
