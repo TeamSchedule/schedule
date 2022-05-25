@@ -19,8 +19,9 @@ app:
     color:
       default: "#000000"
   jwt:
-    tokenHeaderName: "Authorization"
-    tokenStart: "Bearer "
+    token:
+      prefix: "Bearer "
+      headerName: "Authorization"
 server:
   port: ${SERVER_PORT}
   servlet:

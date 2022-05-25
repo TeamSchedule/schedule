@@ -7,9 +7,9 @@ import javax.servlet.http.HttpServletRequest;
 
 @Service
 public class ExtractTokenServiceImpl implements ExtractTokenService {
-    @Value("${app.jwt.tokenHeaderName}")
+    @Value("${app.jwt.token.headerName}")
     private String tokenHeaderName;
-    @Value("${app.jwt.tokenStart}")
+    @Value("${app.jwt.token.prefix}")
     private String tokenStart;
 
     @Override
