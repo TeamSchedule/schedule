@@ -5,7 +5,7 @@ import com.schedule.team.model.entity.TeamInvite;
 
 import javax.transaction.Transactional;
 
-public interface PatchTeamInviteService {
+public interface UpdateTeamInviteService {
     @Transactional
     void patch(TeamInvite teamInvite, TeamInviteStatus teamInviteStatus);
 }

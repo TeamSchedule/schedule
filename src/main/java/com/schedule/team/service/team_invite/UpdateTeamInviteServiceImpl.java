@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 
 @Service
-public class PatchTeamInviteServiceImpl implements PatchTeamInviteService {
+public class UpdateTeamInviteServiceImpl implements UpdateTeamInviteService {
     @Override
     @Transactional
     public void patch(TeamInvite teamInvite, TeamInviteStatus teamInviteStatus) {
