@@ -9,6 +9,7 @@ import com.schedule.team.model.entity.TeamInvite;
 import com.schedule.team.model.entity.User;
 import com.schedule.team.model.request.CreateTeamInviteRequest;
 import com.schedule.team.model.request.PatchTeamInviteRequest;
+import com.schedule.team.model.response.CreateTeamInviteResponse;
 import com.schedule.team.model.response.GetTeamInvitesResponse;
 import com.schedule.team.service.jwt.ExtractClaimsFromRequestService;
 import com.schedule.team.service.jwt.ExtractUserFromRequestService;
@@ -43,7 +44,7 @@ public class TeamInviteController {
     private final JoinTeamService joinTeamService;
 
     @PostMapping
-    public ResponseEntity<?> create(
+    public ResponseEntity<CreateTeamInviteResponse> create(
             @RequestBody CreateTeamInviteRequest createTeamInviteRequest,
             HttpServletRequest request
     ) {
@@ -55,45 +56,49 @@ public class TeamInviteController {
                 .stream()
                 .map(getUserByIdService::get)
                 .toList();
-        for (User invited : invitedList) {
-            createTeamInviteService.create(
-                    team,
-                    inviting,
-                    invited,
-                    LocalDateTime.now()
-            );
-        }
+        List<Long> ids = invitedList
+                .stream()
+                .map(invited -> createTeamInviteService.create(
+                        team,
+                        inviting,
+                        invited,
+                        LocalDateTime.now()
+                ))
+                .map(TeamInvite::getId).toList();
 
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+                new CreateTeamInviteResponse(
+                        ids
+                )
+        );
     }
 
     @GetMapping
-    public ResponseEntity<?> get(
+    public ResponseEntity<GetTeamInvitesResponse> get(
             @RequestParam GetTeamInviteCriteria criteria,
             HttpServletRequest request
     ) {
         Long userId = extractClaimsFromRequestService.extract(request).getId();
-
         List<TeamInvite> teamInvites = getTeamInvitesByUserService.get(userId, criteria);
-
+        List<TeamInviteDTO> teamInviteDTOS = teamInvites
+                .stream()
+                .map(
+                        teamInvite -> new TeamInviteDTO(
+                                teamInvite.getId(),
+                                teamInvite.getInviting().getId(),
+                                teamInvite.getInvited().getId(),
+                                teamInvite.getDate(),
+                                teamInvite.getInviteStatus(),
+                                new TeamInviteTeamDTO(
+                                        teamInvite.getTeam().getId(),
+                                        teamInvite.getTeam().getName()
+                                )
+                        )
+                )
+                .toList();
         return ResponseEntity.ok().body(
                 new GetTeamInvitesResponse(
-                        teamInvites
-                                .stream()
-                                .map(
-                                        teamInvite -> new TeamInviteDTO(
-                                                teamInvite.getId(),
-                                                teamInvite.getInviting().getId(),
-                                                teamInvite.getInvited().getId(),
-                                                teamInvite.getDate(),
-                                                teamInvite.getInviteStatus(),
-                                                new TeamInviteTeamDTO(
-                                                        teamInvite.getTeam().getId(),
-                                                        teamInvite.getTeam().getName()
-                                                )
-                                        )
-                                )
-                                .toList()
+                        teamInviteDTOS
                 )
         );
     }

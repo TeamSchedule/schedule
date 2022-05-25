@@ -16,8 +16,8 @@ public class CreateTeamInviteServiceImpl implements CreateTeamInviteService {
     private final TeamInviteRepository teamInviteRepository;
 
     @Override
-    public void create(Team team, User inviting, User invited, LocalDateTime time) {
-        teamInviteRepository.save(
+    public TeamInvite create(Team team, User inviting, User invited, LocalDateTime time) {
+        return teamInviteRepository.save(
                 new TeamInvite(
                         team,
                         invited,
