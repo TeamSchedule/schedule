@@ -23,3 +23,5 @@ app:
     tokenStart: "Bearer "
 server:
   port: ${SERVER_PORT}
+  servlet:
+    contextPath: /schedule/*
