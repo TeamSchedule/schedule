@@ -5,7 +5,7 @@ RUN gradle clean build --no-daemon -i --stacktrace -x test
 
 FROM openjdk:17-alpine
 WORKDIR /app
-COPY --from=build /app/build/libs/team-0.0.1-SNAPSHOT.jar ./spring-boot-application.jar
+COPY --from=build /app/build/libs/schedule-0.0.1-SNAPSHOT.jar ./spring-boot-application.jar
 
 ARG POSTGRES_HOSTS
 ARG POSTGRES_DB

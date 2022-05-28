@@ -1,0 +1,31 @@
+spring:
+  mvc:
+    pathmatch:
+      matching-strategy: ant-path-matcher
+  datasource:
+    url: jdbc:tc:postgresql:13.6:///test_database
+    username: user
+    password: password
+  flyway:
+    locations: classpath:db/migration
+    schemas: public
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        default_schema: public
+server:
+  servlet:
+    contextPath: /schedule/
+app:
+  team:
+    color:
+      default: "#000000"
+  jwt:
+    token:
+      prefix: "Bearer "
+      headerName: "Authorization"
+      test: "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOjEsImxvZ2luIjoidXNlciIsImV4cCI6MTY1MzYzNjIzOSwidG9rZW5fdHlwZSI6ImFjY2VzcyJ9.IhE0IXDCicB7a1o2jGwy7s7jFz0ZBUx020QX-VawXfs"
