@@ -102,7 +102,18 @@ public class TaskController {
                                 to,
                                 extractClaimsFromRequestService.extract(request).getId(),
                                 teams
-                        )
+                        ).stream().map(
+                                task -> new TaskDTO(
+                                        task.getName(),
+                                        task.getAuthor().getId(),
+                                        task.getAssignee().getId(),
+                                        task.getTeam().getId(),
+                                        task.getDescription(),
+                                        task.getCreationTime(),
+                                        task.getExpirationTime(),
+                                        task.isClosed()
+                                )
+                        ).toList()
                 )
         );
     }
