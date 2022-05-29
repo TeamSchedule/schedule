@@ -74,6 +74,7 @@ public class TaskController {
 
         return ResponseEntity.ok().body(
                 new TaskDTO(
+                        taskId,
                         task.getName(),
                         task.getAuthor().getId(),
                         task.getAssignee().getId(),
@@ -115,6 +116,7 @@ public class TaskController {
                                 teams
                         ).stream().map(
                                 task -> new TaskDTO(
+                                        task.getId(),
                                         task.getName(),
                                         task.getAuthor().getId(),
                                         task.getAssignee().getId(),

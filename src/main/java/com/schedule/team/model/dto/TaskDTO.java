@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class TaskDTO {
+    private Long id;
     private String name;
     private Long authorId;
     private Long assigneeId;
