@@ -109,14 +109,13 @@ public class TeamController {
         List<TeamColor> teamColors = getTeamColorsByUserIdService.get(userId);
         TeamColor defaultTeamColor = teamColors
                 .stream()
-                .filter(teamColor -> !teamColor.getTeam().getName().equals(String.valueOf(userId)))
+                .filter(teamColor -> teamColor.getTeam().getName().equals(String.valueOf(userId)))
                 .findFirst()
                 .get();
         teamColors.remove(defaultTeamColor);
 
         List<TeamDescriptionDTO> teamDescriptionDTOS = teamColors
                 .stream()
-                .filter(teamColor -> !teamColor.getTeam().getName().equals(String.valueOf(userId)))
                 .map(teamColor -> new TeamDescriptionDTO(
                         teamColor.getTeam().getId(),
                         teamColor.getTeam().getName(),
