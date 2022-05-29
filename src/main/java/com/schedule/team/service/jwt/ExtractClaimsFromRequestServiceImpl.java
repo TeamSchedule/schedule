@@ -23,6 +23,7 @@ public class ExtractClaimsFromRequestServiceImpl implements ExtractClaimsFromReq
                         request
                 )
         );
+        // TODO: remove
         if (!userExistsByIdService.exists(claims.getId())) {
             createUserService.create(claims.getId());
         }
