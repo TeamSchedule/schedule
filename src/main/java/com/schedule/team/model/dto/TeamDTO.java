@@ -1,7 +1,6 @@
 package com.schedule.team.model.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.schedule.team.model.entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,7 +16,7 @@ public class TeamDTO {
     private String name;
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate creationDate;
-    private User admin;
-    private List<User> members;
+    private Long adminId;
+    private List<Long> membersIds;
     private String color;
 }
