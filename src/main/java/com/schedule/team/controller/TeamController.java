@@ -107,10 +107,16 @@ public class TeamController {
     public ResponseEntity<GetTeamsResponse> get(HttpServletRequest request) {
         Long userId = extractClaimsFromRequestService.extract(request).getId();
         List<TeamColor> teamColors = getTeamColorsByUserIdService.get(userId);
+        TeamColor defaultTeamColor = teamColors
+                .stream()
+                .filter(teamColor -> !teamColor.getTeam().getName().equals(String.valueOf(userId)))
+                .findFirst()
+                .get();
+        teamColors.remove(defaultTeamColor);
 
         List<TeamDescriptionDTO> teamDescriptionDTOS = teamColors
                 .stream()
-                .filter(teamColor -> !teamColor.getTeam().getId().equals(userId))
+                .filter(teamColor -> !teamColor.getTeam().getName().equals(String.valueOf(userId)))
                 .map(teamColor -> new TeamDescriptionDTO(
                         teamColor.getTeam().getId(),
                         teamColor.getTeam().getName(),
@@ -120,7 +126,8 @@ public class TeamController {
                 )).toList();
         return ResponseEntity.ok().body(
                 new GetTeamsResponse(
-                        teamDescriptionDTOS
+                        teamDescriptionDTOS,
+                        defaultTeamColor.getTeam().getId()
                 )
         );
     }

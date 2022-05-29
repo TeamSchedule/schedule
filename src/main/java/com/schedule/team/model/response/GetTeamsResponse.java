@@ -1,6 +1,5 @@
 package com.schedule.team.model.response;
 
-import com.schedule.team.model.dto.TeamDTO;
 import com.schedule.team.model.dto.TeamDescriptionDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -13,4 +12,5 @@ import java.util.List;
 @AllArgsConstructor
 public class GetTeamsResponse {
     private List<TeamDescriptionDTO> teams;
+    private Long defaultTeamId;
 }
