@@ -66,7 +66,7 @@ public class TeamController {
             HttpServletRequest request
     ) {
         Long userId = extractUserFromRequestService.extract(request).getId();
-        TeamColor teamColor = getTeamColorByUserIdAndTeamIdService.get(teamId, userId);
+        TeamColor teamColor = getTeamColorByUserIdAndTeamIdService.get(userId, teamId);
         Team team = teamColor.getTeam();
 
         return ResponseEntity.ok().body(
