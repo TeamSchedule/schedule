@@ -75,8 +75,8 @@ public class TeamController {
                                 team.getId(),
                                 team.getName(),
                                 team.getCreationDate(),
-                                team.getAdmin(),
-                                team.getTeamColors().stream().map(TeamColor::getUser).toList(),
+                                team.getAdmin().getId(),
+                                team.getTeamColors().stream().map(TeamColor::getUser).map(User::getId).toList(),
                                 teamColor.getColor()
                         )
                 )
