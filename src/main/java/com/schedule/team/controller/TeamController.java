@@ -5,6 +5,7 @@ import com.schedule.team.model.dto.TeamDescriptionDTO;
 import com.schedule.team.model.entity.Team;
 import com.schedule.team.model.entity.TeamColor;
 import com.schedule.team.model.entity.User;
+import com.schedule.team.model.request.CreateDefaultTeamRequest;
 import com.schedule.team.model.request.CreateTeamRequest;
 import com.schedule.team.model.request.PatchTeamRequest;
 import com.schedule.team.model.response.CreateTeamResponse;
@@ -19,6 +20,7 @@ import com.schedule.team.service.team.UpdateTeamService;
 import com.schedule.team.service.team_color.GetTeamColorByUserIdAndTeamIdService;
 import com.schedule.team.service.team_color.GetTeamColorsByUserIdService;
 import com.schedule.team.service.team_color.UpdateTeamColorService;
+import com.schedule.team.service.user.CreateUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -41,6 +43,24 @@ public class TeamController {
     private final GetTeamByIdService getTeamByIdService;
     private final UpdateTeamService updateTeamService;
     private final UpdateTeamColorService updateTeamColorService;
+    private final CreateUserService createUserService;
+
+    @PostMapping("/default")
+    public ResponseEntity<CreateTeamResponse> createDefaultTeam(
+            @RequestBody CreateDefaultTeamRequest createDefaultTeamRequest
+    ) {
+        User creator = createUserService.create(createDefaultTeamRequest.getUserId());
+        Team team = createTeamService.create(
+                String.valueOf(createDefaultTeamRequest.getUserId()),
+                LocalDate.now(),
+                creator
+        );
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+                new CreateTeamResponse(
+                        team.getId()
+                )
+        );
+    }
 
     @PostMapping
     public ResponseEntity<CreateTeamResponse> create(

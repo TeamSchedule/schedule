@@ -1,5 +1,7 @@
 package com.schedule.team.service.user;
 
+import com.schedule.team.model.entity.User;
+
 public interface CreateUserService {
-    void create(Long id);
+    User create(Long id);
 }

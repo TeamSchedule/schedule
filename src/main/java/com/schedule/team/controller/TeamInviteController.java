@@ -73,6 +73,8 @@ public class TeamInviteController {
         );
     }
 
+    // TODO: teamId optional
+    // TODO: status must
     @GetMapping
     public ResponseEntity<GetTeamInvitesResponse> get(
             @RequestParam GetTeamInviteCriteria criteria,
