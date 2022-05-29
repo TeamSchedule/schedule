@@ -13,7 +13,7 @@ public class TaskDTO {
     private String name;
     private Long authorId;
     private Long assigneeId;
-    private Long teamId;
+    private TeamDTO team;
     private String description;
     private LocalDateTime creationTime;
     private LocalDateTime expirationTime;
