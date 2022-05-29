@@ -1,6 +1,7 @@
 package com.schedule.team.controller;
 
 import com.schedule.team.model.dto.TaskDTO;
+import com.schedule.team.model.dto.TeamDTO;
 import com.schedule.team.model.entity.Task;
 import com.schedule.team.model.entity.Team;
 import com.schedule.team.model.entity.User;
@@ -69,12 +70,22 @@ public class TaskController {
             @PathVariable Long taskId
     ) {
         Task task = getTaskByIdService.get(taskId);
+        Team team = task.getTeam();
+
         return ResponseEntity.ok().body(
                 new TaskDTO(
                         task.getName(),
                         task.getAuthor().getId(),
                         task.getAssignee().getId(),
-                        task.getTeam().getId(),
+                        // TODO: easy dto. without members and color
+                        new TeamDTO(
+                                team.getId(),
+                                team.getName(),
+                                team.getCreationDate(),
+                                team.getAdmin().getId(),
+                                List.of(),
+                                "BADCOLOR"
+                        ),
                         task.getDescription(),
                         task.getCreationTime(),
                         task.getExpirationTime(),
@@ -107,7 +118,15 @@ public class TaskController {
                                         task.getName(),
                                         task.getAuthor().getId(),
                                         task.getAssignee().getId(),
-                                        task.getTeam().getId(),
+                                        // TODO: easy dto. without members and color
+                                        new TeamDTO(
+                                                task.getTeam().getId(),
+                                                task.getTeam().getName(),
+                                                task.getTeam().getCreationDate(),
+                                                task.getTeam().getAdmin().getId(),
+                                                List.of(),
+                                                "BADCOLOR"
+                                        ),
                                         task.getDescription(),
                                         task.getCreationTime(),
                                         task.getExpirationTime(),
