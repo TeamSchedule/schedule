@@ -7,6 +7,7 @@ import com.schedule.team.model.entity.User;
 import com.schedule.team.model.request.CreateTaskRequest;
 import com.schedule.team.model.request.PatchTaskRequest;
 import com.schedule.team.model.response.CreateTaskResponse;
+import com.schedule.team.model.response.GetTasksResponse;
 import com.schedule.team.service.jwt.ExtractClaimsFromRequestService;
 import com.schedule.team.service.jwt.ExtractUserFromRequestService;
 import com.schedule.team.service.task.*;
@@ -83,7 +84,7 @@ public class TaskController {
     }
 
     @GetMapping
-    public List<Task> getTasksInRange(
+    public ResponseEntity<GetTasksResponse> getTasksInRange(
             HttpServletRequest request,
             @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime from,
             @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime to,
@@ -94,11 +95,15 @@ public class TaskController {
                 .map(getTeamByIdService::get)
                 .collect(Collectors.toList());
 
-        return getTasksInRangeService.getTasksInRange(
-                from,
-                to,
-                extractClaimsFromRequestService.extract(request).getId(),
-                teams
+        return ResponseEntity.ok().body(
+                new GetTasksResponse(
+                        getTasksInRangeService.getTasksInRange(
+                                from,
+                                to,
+                                extractClaimsFromRequestService.extract(request).getId(),
+                                teams
+                        )
+                )
         );
     }
 
