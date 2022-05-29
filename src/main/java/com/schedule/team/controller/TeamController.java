@@ -110,6 +110,7 @@ public class TeamController {
 
         List<TeamDescriptionDTO> teamDescriptionDTOS = teamColors
                 .stream()
+                .filter(teamColor -> !teamColor.getTeam().getId().equals(userId))
                 .map(teamColor -> new TeamDescriptionDTO(
                         teamColor.getTeam().getId(),
                         teamColor.getTeam().getName(),
