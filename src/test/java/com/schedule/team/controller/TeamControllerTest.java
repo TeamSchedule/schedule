@@ -114,6 +114,11 @@ public class TeamControllerTest extends IntegrationTest {
         Assertions.assertEquals(teamName, teamDTO.getName());
         Assertions.assertEquals(creationDate, teamDTO.getCreationDate());
         Assertions.assertEquals(admin.getId(), teamDTO.getAdminId());
-        Assertions.assertEquals(List.of(admin.getId(), member.getId()), teamDTO.getMembersIds());
+        List<Long> expectedMembersIds = List.of(admin.getId(), member.getId());
+        Assertions.assertTrue(
+                expectedMembersIds.size() == teamDTO.getMembersIds().size()
+                && expectedMembersIds.containsAll(teamDTO.getMembersIds())
+                && teamDTO.getMembersIds().containsAll(expectedMembersIds)
+        );
     }
 }
