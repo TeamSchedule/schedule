@@ -17,9 +17,9 @@ public class TaskDTO {
     private Long assigneeId;
     private TeamDTO team;
     private String description;
-    @JsonFormat(pattern = "yyyy-MM-dd@HH:mm:ss")
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private LocalDateTime creationTime;
-    @JsonFormat(pattern = "yyyy-MM-dd@HH:mm:ss")
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private LocalDateTime expirationTime;
     private boolean closed;
 }
