@@ -6,6 +6,7 @@ import com.schedule.team.IntegrationTest;
 import com.schedule.team.model.dto.team.TeamDTO;
 import com.schedule.team.model.entity.Team;
 import com.schedule.team.model.entity.User;
+import com.schedule.team.model.request.CreateDefaultTeamRequest;
 import com.schedule.team.model.request.CreateTeamRequest;
 import com.schedule.team.model.response.CreateTeamResponse;
 import com.schedule.team.model.response.GetTeamByIdResponse;
@@ -24,7 +25,8 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @AutoConfigureMockMvc
@@ -61,6 +63,34 @@ public class TeamControllerTest extends IntegrationTest {
     @AfterEach
     public void afterEach() {
         clearDb();
+    }
+
+    @Test
+    void createDefaultTeamTest() throws Exception {
+        Long userId = 1L;
+        CreateDefaultTeamRequest createDefaultTeamRequest = new CreateDefaultTeamRequest(userId);
+        String createDefaultTeamRequestBody = objectMapper.writeValueAsString(createDefaultTeamRequest);
+
+        String response = mockMvc
+                .perform(
+                        post("/team/default")
+                                .contentType(APPLICATION_JSON)
+                                .content(createDefaultTeamRequestBody)
+                                .header(tokenHeaderName, tokenValue)
+                )
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        CreateTeamResponse createTeamResponse = objectMapper.readValue(response, CreateTeamResponse.class);
+
+        User user = userRepository.findById(userId).get();
+        Assertions.assertNotNull(user);
+        Assertions.assertEquals(userId, user.getId());
+
+        Team team = teamRepository.findById(createTeamResponse.getTeamId()).get();
+        Assertions.assertNotNull(team);
+        Assertions.assertEquals(String.valueOf(userId), team.getName());
     }
 
     @Test
@@ -102,7 +132,7 @@ public class TeamControllerTest extends IntegrationTest {
 
         String response = mockMvc
                 .perform(
-                        get("/team/"+team.getId())
+                        get("/team/" + team.getId())
                                 .header(tokenHeaderName, tokenValue)
                 )
                 .andExpect(status().isOk())
@@ -119,8 +149,8 @@ public class TeamControllerTest extends IntegrationTest {
         List<Long> expectedMembersIds = List.of(admin.getId(), member.getId());
         Assertions.assertTrue(
                 expectedMembersIds.size() == teamDTO.getMembersIds().size()
-                && expectedMembersIds.containsAll(teamDTO.getMembersIds())
-                && teamDTO.getMembersIds().containsAll(expectedMembersIds)
+                        && expectedMembersIds.containsAll(teamDTO.getMembersIds())
+                        && teamDTO.getMembersIds().containsAll(expectedMembersIds)
         );
     }
 }
