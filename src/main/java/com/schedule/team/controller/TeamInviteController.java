@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/team/invite")
@@ -34,11 +35,11 @@ public class TeamInviteController {
     private final ExtractUserFromRequestService extractUserFromRequestService;
     private final GetUserByIdService getUserByIdService;
     private final CreateTeamInviteService createTeamInviteService;
-    private final GetTeamInvitesByUserService getTeamInvitesByUserService;
     private final GetTeamInviteByIdService getTeamInviteByIdService;
     private final UpdateTeamInviteService updateTeamInviteService;
     private final JoinTeamService joinTeamService;
     private final BuildTeamInviteDTOService buildTeamInviteDTOService;
+    private final GetTeamInvitesService getTeamInvitesService;
 
     @PostMapping
     public ResponseEntity<CreateTeamInviteResponse> create(
@@ -72,15 +73,21 @@ public class TeamInviteController {
         );
     }
 
-    // TODO: teamId optional
-    // TODO: status must
     @GetMapping
     public ResponseEntity<GetTeamInvitesResponse> get(
-            @RequestParam GetTeamInviteCriteria criteria,
+            @RequestParam(name = "criteria") GetTeamInviteCriteria criteria,
+            @RequestParam(name = "status") TeamInviteStatus status,
+            @RequestParam(name = "teamId", required = false) Optional<Long> teamId,
             HttpServletRequest request
     ) {
         Long userId = extractClaimsFromRequestService.extract(request).getId();
-        List<TeamInvite> teamInvites = getTeamInvitesByUserService.get(userId, criteria);
+        List<TeamInvite> teamInvites;
+        if (teamId.isPresent()) {
+            teamInvites = getTeamInvitesService.get(userId, criteria, status, teamId.get());
+        } else {
+            teamInvites = getTeamInvitesService.get(userId, criteria, status);
+        }
+        
         List<TeamInviteDTO> teamInviteDTOS = teamInvites
                 .stream()
                 .map(buildTeamInviteDTOService::build)
