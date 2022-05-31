@@ -1,6 +1,8 @@
 package com.schedule.team.model.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.schedule.team.model.dto.team.TeamDTO;
+import com.schedule.team.model.dto.team.TeamShortDescriptionDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,7 +17,7 @@ public class TaskDTO {
     private String name;
     private Long authorId;
     private Long assigneeId;
-    private TeamDTO team;
+    private TeamShortDescriptionDTO team;
     private String description;
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     private LocalDateTime creationTime;

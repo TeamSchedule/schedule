@@ -1,7 +1,8 @@
-package com.schedule.team.model.dto.team_invite;
+package com.schedule.team.model.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.schedule.team.model.TeamInviteStatus;
+import com.schedule.team.model.dto.team.TeamShortDescriptionDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -18,5 +19,5 @@ public class TeamInviteDTO {
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDateTime date;
     private TeamInviteStatus inviteStatus;
-    private TeamInviteTeamDTO team;
+    private TeamShortDescriptionDTO team;
 }

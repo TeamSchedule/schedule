@@ -13,4 +13,5 @@ import javax.persistence.*;
 public class User {
     @Id
     private Long id;
+    // TODO: foreign key to private team
 }

@@ -3,7 +3,7 @@ package com.schedule.team.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.schedule.team.IntegrationTest;
-import com.schedule.team.model.dto.TeamDTO;
+import com.schedule.team.model.dto.team.TeamDTO;
 import com.schedule.team.model.entity.Team;
 import com.schedule.team.model.entity.User;
 import com.schedule.team.model.request.CreateTeamRequest;
@@ -65,6 +65,8 @@ public class TeamControllerTest extends IntegrationTest {
 
     @Test
     void createTeamTest() throws Exception {
+        userRepository.save(new User(1L));
+
         String teamName = "name";
         CreateTeamRequest createTeamRequest = new CreateTeamRequest(teamName);
         String createTeamRequestBody = objectMapper.writeValueAsString(createTeamRequest);

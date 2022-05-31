@@ -1,7 +1,6 @@
 package com.schedule.team.controller;
 
 import com.schedule.team.model.dto.TaskDTO;
-import com.schedule.team.model.dto.TeamDTO;
 import com.schedule.team.model.entity.Task;
 import com.schedule.team.model.entity.Team;
 import com.schedule.team.model.entity.User;
@@ -38,6 +37,7 @@ public class TaskController {
     private final GetTasksInRangeService getTasksInRangeService;
     private final DeleteTaskByIdService deleteTaskByIdService;
     private final UpdateTaskService updateTaskService;
+    private final BuildTaskDtoService buildTaskDtoService;
 
     @PostMapping
     public ResponseEntity<CreateTaskResponse> create(
@@ -70,28 +70,8 @@ public class TaskController {
             @PathVariable Long taskId
     ) {
         Task task = getTaskByIdService.get(taskId);
-        Team team = task.getTeam();
-
         return ResponseEntity.ok().body(
-                new TaskDTO(
-                        taskId,
-                        task.getName(),
-                        task.getAuthor().getId(),
-                        task.getAssignee().getId(),
-                        // TODO: easy dto. without members and color
-                        new TeamDTO(
-                                team.getId(),
-                                team.getName(),
-                                team.getCreationDate(),
-                                team.getAdmin().getId(),
-                                List.of(),
-                                "BADCOLOR"
-                        ),
-                        task.getDescription(),
-                        task.getCreationTime(),
-                        task.getExpirationTime(),
-                        task.isClosed()
-                )
+                buildTaskDtoService.build(task)
         );
     }
 
@@ -109,32 +89,16 @@ public class TaskController {
 
         return ResponseEntity.ok().body(
                 new GetTasksResponse(
-                        getTasksInRangeService.getTasksInRange(
-                                from,
-                                to,
-                                extractClaimsFromRequestService.extract(request).getId(),
-                                teams
-                        ).stream().map(
-                                task -> new TaskDTO(
-                                        task.getId(),
-                                        task.getName(),
-                                        task.getAuthor().getId(),
-                                        task.getAssignee().getId(),
-                                        // TODO: easy dto. without members and color
-                                        new TeamDTO(
-                                                task.getTeam().getId(),
-                                                task.getTeam().getName(),
-                                                task.getTeam().getCreationDate(),
-                                                task.getTeam().getAdmin().getId(),
-                                                List.of(),
-                                                "BADCOLOR"
-                                        ),
-                                        task.getDescription(),
-                                        task.getCreationTime(),
-                                        task.getExpirationTime(),
-                                        task.isClosed()
+                        getTasksInRangeService
+                                .getTasksInRange(
+                                        from,
+                                        to,
+                                        extractClaimsFromRequestService.extract(request).getId(),
+                                        teams
                                 )
-                        ).toList()
+                                .stream()
+                                .map(buildTaskDtoService::build)
+                                .toList()
                 )
         );
     }

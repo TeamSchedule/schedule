@@ -1,7 +1,7 @@
 package com.schedule.team.controller;
 
-import com.schedule.team.model.dto.TeamDTO;
-import com.schedule.team.model.dto.TeamDescriptionDTO;
+import com.schedule.team.model.dto.team.TeamDTO;
+import com.schedule.team.model.dto.team.TeamDescriptionDTO;
 import com.schedule.team.model.entity.Team;
 import com.schedule.team.model.entity.TeamColor;
 import com.schedule.team.model.entity.User;
@@ -120,7 +120,7 @@ public class TeamController {
                         teamColor.getTeam().getId(),
                         teamColor.getTeam().getName(),
                         teamColor.getTeam().getCreationDate(),
-                        teamColor.getTeam().getAdmin(),
+                        teamColor.getTeam().getAdmin().getId(),
                         teamColor.getColor()
                 )).toList();
         return ResponseEntity.ok().body(

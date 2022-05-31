@@ -2,8 +2,7 @@ package com.schedule.team.controller;
 
 import com.schedule.team.model.GetTeamInviteCriteria;
 import com.schedule.team.model.TeamInviteStatus;
-import com.schedule.team.model.dto.team_invite.TeamInviteDTO;
-import com.schedule.team.model.dto.team_invite.TeamInviteTeamDTO;
+import com.schedule.team.model.dto.TeamInviteDTO;
 import com.schedule.team.model.entity.Team;
 import com.schedule.team.model.entity.TeamInvite;
 import com.schedule.team.model.entity.User;
@@ -15,10 +14,7 @@ import com.schedule.team.service.jwt.ExtractClaimsFromRequestService;
 import com.schedule.team.service.jwt.ExtractUserFromRequestService;
 import com.schedule.team.service.team.GetTeamByIdService;
 import com.schedule.team.service.team.JoinTeamService;
-import com.schedule.team.service.team_invite.CreateTeamInviteService;
-import com.schedule.team.service.team_invite.GetTeamInviteByIdService;
-import com.schedule.team.service.team_invite.GetTeamInvitesByUserService;
-import com.schedule.team.service.team_invite.UpdateTeamInviteService;
+import com.schedule.team.service.team_invite.*;
 import com.schedule.team.service.user.GetUserByIdService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -42,6 +38,7 @@ public class TeamInviteController {
     private final GetTeamInviteByIdService getTeamInviteByIdService;
     private final UpdateTeamInviteService updateTeamInviteService;
     private final JoinTeamService joinTeamService;
+    private final BuildTeamInviteDTOService buildTeamInviteDTOService;
 
     @PostMapping
     public ResponseEntity<CreateTeamInviteResponse> create(
@@ -58,12 +55,14 @@ public class TeamInviteController {
                 .toList();
         List<Long> ids = invitedList
                 .stream()
-                .map(invited -> createTeamInviteService.create(
-                        team,
-                        inviting,
-                        invited,
-                        LocalDateTime.now()
-                ))
+                .map(
+                        invited -> createTeamInviteService.create(
+                                team,
+                                inviting,
+                                invited,
+                                LocalDateTime.now()
+                        )
+                )
                 .map(TeamInvite::getId).toList();
 
         return ResponseEntity.status(HttpStatus.CREATED).body(
@@ -84,19 +83,7 @@ public class TeamInviteController {
         List<TeamInvite> teamInvites = getTeamInvitesByUserService.get(userId, criteria);
         List<TeamInviteDTO> teamInviteDTOS = teamInvites
                 .stream()
-                .map(
-                        teamInvite -> new TeamInviteDTO(
-                                teamInvite.getId(),
-                                teamInvite.getInviting().getId(),
-                                teamInvite.getInvited().getId(),
-                                teamInvite.getDate(),
-                                teamInvite.getInviteStatus(),
-                                new TeamInviteTeamDTO(
-                                        teamInvite.getTeam().getId(),
-                                        teamInvite.getTeam().getName()
-                                )
-                        )
-                )
+                .map(buildTeamInviteDTOService::build)
                 .toList();
         return ResponseEntity.ok().body(
                 new GetTeamInvitesResponse(

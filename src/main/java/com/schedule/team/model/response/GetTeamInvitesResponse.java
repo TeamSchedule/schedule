@@ -1,6 +1,6 @@
 package com.schedule.team.model.response;
 
-import com.schedule.team.model.dto.team_invite.TeamInviteDTO;
+import com.schedule.team.model.dto.TeamInviteDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
