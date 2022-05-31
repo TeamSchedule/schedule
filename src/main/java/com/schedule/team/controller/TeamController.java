@@ -13,10 +13,7 @@ import com.schedule.team.model.response.GetTeamByIdResponse;
 import com.schedule.team.model.response.GetTeamsResponse;
 import com.schedule.team.service.jwt.ExtractClaimsFromRequestService;
 import com.schedule.team.service.jwt.ExtractUserFromRequestService;
-import com.schedule.team.service.team.CreateTeamService;
-import com.schedule.team.service.team.GetTeamByIdService;
-import com.schedule.team.service.team.LeaveTeamService;
-import com.schedule.team.service.team.UpdateTeamService;
+import com.schedule.team.service.team.*;
 import com.schedule.team.service.team_color.GetTeamColorByUserIdAndTeamIdService;
 import com.schedule.team.service.team_color.GetTeamColorsByUserIdService;
 import com.schedule.team.service.team_color.UpdateTeamColorService;
@@ -44,6 +41,7 @@ public class TeamController {
     private final UpdateTeamService updateTeamService;
     private final UpdateTeamColorService updateTeamColorService;
     private final CreateUserService createUserService;
+    private final BuildTeamDescriptionDTOService buildTeamDescriptionDTOService;
 
     @PostMapping("/default")
     public ResponseEntity<CreateTeamResponse> createDefaultTeam(
@@ -116,11 +114,8 @@ public class TeamController {
 
         List<TeamDescriptionDTO> teamDescriptionDTOS = teamColors
                 .stream()
-                .map(teamColor -> new TeamDescriptionDTO(
-                        teamColor.getTeam().getId(),
-                        teamColor.getTeam().getName(),
-                        teamColor.getTeam().getCreationDate(),
-                        teamColor.getTeam().getAdmin().getId(),
+                .map(teamColor -> buildTeamDescriptionDTOService.build(
+                        teamColor.getTeam(),
                         teamColor.getColor()
                 )).toList();
         return ResponseEntity.ok().body(
