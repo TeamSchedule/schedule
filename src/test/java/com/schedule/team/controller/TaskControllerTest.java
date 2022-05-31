@@ -20,6 +20,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -60,7 +61,7 @@ public class TaskControllerTest extends IntegrationTest {
     }
 
     @Test
-    void getTaskTest() throws Exception {
+    void getTaskByIdTest() throws Exception {
         User author = userRepository.save(new User(1L));
         User assignee = userRepository.save(new User(2L));
         Team team = teamRepository.save(new Team("test", LocalDate.now(), author));
@@ -102,5 +103,37 @@ public class TaskControllerTest extends IntegrationTest {
         Assertions.assertEquals(task.getAssignee().getId(), taskDTO.getAssigneeId());
         Assertions.assertEquals(task.getAuthor().getId(), taskDTO.getAuthorId());
         Assertions.assertEquals(task.getTeam().getId(), taskDTO.getTeam().getId());
+    }
+
+    @Test
+    void deleteTaskTest() throws Exception {
+        User author = userRepository.save(new User(1L));
+        User assignee = userRepository.save(new User(2L));
+        Team team = teamRepository.save(new Team("test", LocalDate.now(), author));
+
+        String taskName = "test";
+        String taskDescription = "description";
+        LocalDateTime creationTime = LocalDateTime.of(10, 10, 10, 10, 10, 10);
+        LocalDateTime expirationTime = LocalDateTime.of(12, 12, 12, 12, 12, 12);
+
+        Task task = taskRepository.save(
+                new Task(
+                        taskName,
+                        author,
+                        assignee,
+                        team,
+                        taskDescription,
+                        creationTime,
+                        expirationTime
+                )
+        );
+
+        mockMvc
+                .perform(
+                        delete("/task/"+task.getId())
+                                .header(tokenHeaderName, tokenValue)
+                )
+                .andExpect(status().isOk());
+        Assertions.assertFalse(taskRepository.existsById(task.getId()));
     }
 }
