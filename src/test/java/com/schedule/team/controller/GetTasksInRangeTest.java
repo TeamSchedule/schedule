@@ -195,7 +195,7 @@ public class GetTasksInRangeTest extends IntegrationTest {
         List<TaskDTO> expectedTasksDTOs = tasks
                 .stream()
                 .map(buildTaskDtoService::build)
-                .filter(taskDTO -> !taskDTO.getExpirationTime().isBefore(expirationTime))
+                .filter(taskDTO -> taskDTO.getExpirationTime().isBefore(expirationTime))
                 .toList();
         Assertions.assertTrue(
                 expectedTasksDTOs.size() == getTasksResponse.getTasks().size()
