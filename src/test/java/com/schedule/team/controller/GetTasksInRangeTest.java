@@ -158,6 +158,7 @@ public class GetTasksInRangeTest extends IntegrationTest {
                 .getResponse()
                 .getContentAsString();
 
+
         GetTasksResponse getTasksResponse = objectMapper.readValue(response, GetTasksResponse.class);
         List<TaskDTO> expectedTasksDTOs = tasks
                 .stream()
