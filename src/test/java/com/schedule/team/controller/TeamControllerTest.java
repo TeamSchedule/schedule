@@ -98,6 +98,7 @@ public class TeamControllerTest extends IntegrationTest {
         User user = userRepository.findById(userId).get();
         Assertions.assertNotNull(user);
         Assertions.assertEquals(userId, user.getId());
+
         Team team = teamRepository.findById(createTeamResponse.getTeamId()).get();
         Assertions.assertNotNull(team);
         Assertions.assertEquals(String.valueOf(userId), team.getName());
