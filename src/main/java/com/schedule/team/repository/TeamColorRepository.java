@@ -24,4 +24,6 @@ public interface TeamColorRepository extends CrudRepository<TeamColor, TeamColor
     TeamColor findByUserIdAndTeamId(Long userId, Long teamId);
 
     void deleteByTeamAndUser(Team team, User user);
+
+    boolean existsByTeamAndUser(Team team, User user);
 }
