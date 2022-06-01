@@ -10,6 +10,7 @@ import com.schedule.team.model.request.CreateDefaultTeamRequest;
 import com.schedule.team.model.request.CreateTeamRequest;
 import com.schedule.team.model.response.CreateTeamResponse;
 import com.schedule.team.model.response.GetTeamByIdResponse;
+import com.schedule.team.repository.TeamColorRepository;
 import com.schedule.team.repository.TeamRepository;
 import com.schedule.team.repository.UserRepository;
 import com.schedule.team.service.team.JoinTeamService;
@@ -25,8 +26,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @AutoConfigureMockMvc
@@ -36,6 +36,7 @@ public class TeamControllerTest extends IntegrationTest {
     private final TeamRepository teamRepository;
     private final UserRepository userRepository;
     private final JoinTeamService joinTeamService;
+    private final TeamColorRepository teamColorRepository;
     private final String tokenHeaderName;
     private final String tokenValue;
 
@@ -46,6 +47,7 @@ public class TeamControllerTest extends IntegrationTest {
             TeamRepository teamRepository,
             UserRepository userRepository,
             JoinTeamService joinTeamService,
+            TeamColorRepository teamColorRepository,
             @Value("${app.jwt.token.headerName}")
                     String tokenHeaderName,
             @Value("${app.jwt.token.test}")
@@ -56,6 +58,7 @@ public class TeamControllerTest extends IntegrationTest {
         this.teamRepository = teamRepository;
         this.userRepository = userRepository;
         this.joinTeamService = joinTeamService;
+        this.teamColorRepository = teamColorRepository;
         this.tokenHeaderName = tokenHeaderName;
         this.tokenValue = tokenValue;
     }
@@ -152,5 +155,24 @@ public class TeamControllerTest extends IntegrationTest {
                         && expectedMembersIds.containsAll(teamDTO.getMembersIds())
                         && teamDTO.getMembersIds().containsAll(expectedMembersIds)
         );
+    }
+
+    @Test
+    void leaveTeamTest() throws Exception {
+        User admin = userRepository.save(new User(1L));
+
+        String teamName = "test";
+        LocalDate creationDate = LocalDate.of(10, 10, 10);
+        Team team = teamRepository.save(new Team(teamName, creationDate, admin));
+        joinTeamService.join(team, admin);
+
+        mockMvc
+                .perform(
+                        delete("/team/" + team.getId() + "/user")
+                                .header(tokenHeaderName, tokenValue)
+                )
+                .andExpect(status().isNoContent());
+
+        Assertions.assertFalse(teamColorRepository.existsByTeamAndUser(team, admin));
     }
 }
