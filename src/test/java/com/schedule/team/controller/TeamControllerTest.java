@@ -4,6 +4,7 @@ package com.schedule.team.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.schedule.team.IntegrationTest;
 import com.schedule.team.model.dto.team.TeamDTO;
+import com.schedule.team.model.dto.team.TeamDescriptionDTO;
 import com.schedule.team.model.entity.Team;
 import com.schedule.team.model.entity.TeamColor;
 import com.schedule.team.model.entity.User;
@@ -12,6 +13,7 @@ import com.schedule.team.model.request.CreateTeamRequest;
 import com.schedule.team.model.request.UpdateTeamRequest;
 import com.schedule.team.model.response.CreateTeamResponse;
 import com.schedule.team.model.response.GetTeamByIdResponse;
+import com.schedule.team.model.response.GetTeamsResponse;
 import com.schedule.team.repository.TeamColorRepository;
 import com.schedule.team.repository.TeamRepository;
 import com.schedule.team.repository.UserRepository;
@@ -41,6 +43,7 @@ public class TeamControllerTest extends IntegrationTest {
     private final TeamColorRepository teamColorRepository;
     private final String tokenHeaderName;
     private final String tokenValue;
+    private final String defaultTeamColor;
 
     @Autowired
     public TeamControllerTest(
@@ -53,7 +56,9 @@ public class TeamControllerTest extends IntegrationTest {
             @Value("${app.jwt.token.headerName}")
                     String tokenHeaderName,
             @Value("${app.jwt.token.test}")
-                    String tokenValue
+                    String tokenValue,
+            @Value("${app.team.color.default}")
+                    String defaultTeamColor
     ) {
         this.mockMvc = mockMvc;
         this.objectMapper = objectMapper;
@@ -63,6 +68,7 @@ public class TeamControllerTest extends IntegrationTest {
         this.teamColorRepository = teamColorRepository;
         this.tokenHeaderName = tokenHeaderName;
         this.tokenValue = tokenValue;
+        this.defaultTeamColor = defaultTeamColor;
     }
 
     @AfterEach
@@ -125,7 +131,7 @@ public class TeamControllerTest extends IntegrationTest {
     }
 
     @Test
-    void getTeamTest() throws Exception {
+    void getTeamByIdTest() throws Exception {
         User admin = userRepository.save(new User(1L));
         User member = userRepository.save(new User(2L));
 
@@ -157,6 +163,59 @@ public class TeamControllerTest extends IntegrationTest {
                         && expectedMembersIds.containsAll(teamDTO.getMembersIds())
                         && teamDTO.getMembersIds().containsAll(expectedMembersIds)
         );
+    }
+
+    @Test
+    void getPersonalTeamsTest() throws Exception {
+        User admin = userRepository.save(new User(1L));
+
+        Team personalTeam = teamRepository.save(new Team(
+                String.valueOf(admin.getId()),
+                LocalDate.of(10, 10, 10),
+                admin
+        ));
+        joinTeamService.join(personalTeam, admin);
+
+        String firstTeamName = "test";
+        LocalDate firstTeamCreationDate = LocalDate.of(10, 10, 10);
+        Team firstTeam = teamRepository.save(new Team(firstTeamName, firstTeamCreationDate, admin));
+        joinTeamService.join(firstTeam, admin);
+
+        String secondTeamName = "team2";
+        LocalDate secondTeamCreationDate = LocalDate.of(11, 11, 11);
+        Team secondTeam = teamRepository.save(new Team(secondTeamName, secondTeamCreationDate, admin));
+        joinTeamService.join(secondTeam, admin);
+
+        String response = mockMvc
+                .perform(
+                        get("/team/")
+                                .header(tokenHeaderName, tokenValue)
+                )
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        GetTeamsResponse getTeamsResponse = objectMapper.readValue(response, GetTeamsResponse.class);
+
+        Assertions.assertEquals(personalTeam.getId(), getTeamsResponse.getDefaultTeamId());
+
+        List<TeamDescriptionDTO> teamDescriptionDTOS = getTeamsResponse.getTeams();
+        Assertions.assertNotNull(teamDescriptionDTOS);
+        Assertions.assertEquals(2, teamDescriptionDTOS.size());
+
+        TeamDescriptionDTO firstTeamDescription = teamDescriptionDTOS.get(0);
+        Assertions.assertEquals(firstTeam.getId(), firstTeamDescription.getId());
+        Assertions.assertEquals(firstTeamName, firstTeamDescription.getName());
+        Assertions.assertEquals(firstTeamCreationDate, firstTeamDescription.getCreationDate());
+        Assertions.assertEquals(admin.getId(), firstTeamDescription.getAdminId());
+        Assertions.assertEquals(defaultTeamColor, firstTeamDescription.getColor());
+
+        TeamDescriptionDTO secondTeamDescription = teamDescriptionDTOS.get(1);
+        Assertions.assertEquals(secondTeam.getId(), secondTeamDescription.getId());
+        Assertions.assertEquals(secondTeamName, secondTeamDescription.getName());
+        Assertions.assertEquals(secondTeamCreationDate, secondTeamDescription.getCreationDate());
+        Assertions.assertEquals(admin.getId(), secondTeamDescription.getAdminId());
+        Assertions.assertEquals(defaultTeamColor, secondTeamDescription.getColor());
     }
 
     @Test

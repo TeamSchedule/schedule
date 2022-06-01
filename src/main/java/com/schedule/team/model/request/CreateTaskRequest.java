@@ -13,6 +13,9 @@ public class CreateTaskRequest {
     private String name;
     private String description;
     private LocalDateTime expirationTime;
+    // TODO: optional. If present -> add task to team tasks. If not present -> personal task
+    // TODO: add PersonalTeam entity
+    // TODO: add User#personalTeam field
     private Long teamId;
     private Long assigneeId;
 }
