@@ -7,6 +7,7 @@ import com.schedule.team.model.entity.Task;
 import com.schedule.team.model.entity.Team;
 import com.schedule.team.model.entity.User;
 import com.schedule.team.model.request.CreateTaskRequest;
+import com.schedule.team.model.request.PatchTaskRequest;
 import com.schedule.team.model.response.CreateTaskResponse;
 import com.schedule.team.repository.TaskRepository;
 import com.schedule.team.repository.TeamRepository;
@@ -179,5 +180,53 @@ public class TaskControllerTest extends IntegrationTest {
                 )
                 .andExpect(status().isOk());
         Assertions.assertFalse(taskRepository.existsById(task.getId()));
+    }
+
+    @Test
+    void updateTaskTest() throws Exception {
+        User author = userRepository.save(new User(1L));
+        User assignee = userRepository.save(new User(2L));
+        Team team = teamRepository.save(new Team("test", LocalDate.now(), author));
+
+        Task task = taskRepository.save(
+                new Task(
+                        "test",
+                        author,
+                        assignee,
+                        team,
+                        "description",
+                        LocalDateTime.of(10, 10, 10, 10, 10, 10),
+                        LocalDateTime.of(12, 12, 12, 12, 12, 12)
+                )
+        );
+
+        String newTaskName = "new name";
+        String newTaskDescription = "new description";
+        Boolean newTaskClosed = true;
+        LocalDateTime newTaskExpirationTime = LocalDateTime.of(7, 7, 7, 7, 7, 7);
+
+        PatchTaskRequest patchTaskRequest = new PatchTaskRequest(
+                newTaskName,
+                newTaskDescription,
+                newTaskExpirationTime,
+                newTaskClosed
+        );
+        String requestBody = objectMapper.writeValueAsString(patchTaskRequest);
+
+        mockMvc
+                .perform(
+                        patch("/task/"+task.getId())
+                                .header(tokenHeaderName, tokenValue)
+                                .contentType(APPLICATION_JSON)
+                                .content(requestBody)
+                )
+                .andExpect(status().isOk());
+
+        Task updatedTask = taskRepository.findById(task.getId()).get();
+        Assertions.assertNotNull(updatedTask);
+        Assertions.assertEquals(newTaskName, updatedTask.getName());
+        Assertions.assertEquals(newTaskDescription, updatedTask.getDescription());
+        Assertions.assertEquals(newTaskExpirationTime, updatedTask.getExpirationTime());
+        Assertions.assertEquals(newTaskClosed, updatedTask.isClosed());
     }
 }
