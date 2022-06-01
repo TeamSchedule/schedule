@@ -15,4 +15,4 @@ jobs:
         with:
           java-version: 1.17
       - name: Test
-        run: gradle clean test --info --full-stacktrace
+        run: gradle clean test --debug --scan --info --full-stacktrace --no-daemon 
