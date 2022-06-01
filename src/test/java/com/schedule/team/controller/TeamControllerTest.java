@@ -5,9 +5,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.schedule.team.IntegrationTest;
 import com.schedule.team.model.dto.team.TeamDTO;
 import com.schedule.team.model.entity.Team;
+import com.schedule.team.model.entity.TeamColor;
 import com.schedule.team.model.entity.User;
 import com.schedule.team.model.request.CreateDefaultTeamRequest;
 import com.schedule.team.model.request.CreateTeamRequest;
+import com.schedule.team.model.request.UpdateTeamRequest;
 import com.schedule.team.model.response.CreateTeamResponse;
 import com.schedule.team.model.response.GetTeamByIdResponse;
 import com.schedule.team.repository.TeamColorRepository;
@@ -174,5 +176,35 @@ public class TeamControllerTest extends IntegrationTest {
                 .andExpect(status().isNoContent());
 
         Assertions.assertFalse(teamColorRepository.existsByTeamAndUser(team, admin));
+    }
+
+    @Test
+    void patchTeamTest() throws Exception {
+        User admin = userRepository.save(new User(1L));
+
+        String teamName = "test";
+        LocalDate creationDate = LocalDate.of(10, 10, 10);
+        Team team = teamRepository.save(new Team(teamName, creationDate, admin));
+        joinTeamService.join(team, admin);
+
+        String newName = "new name";
+        String newColor = "new color";
+        UpdateTeamRequest updateTeamRequest = new UpdateTeamRequest(newName, newColor);
+        String requestBody = objectMapper.writeValueAsString(updateTeamRequest);
+
+        mockMvc
+                .perform(
+                        patch("/team/" + team.getId())
+                                .header(tokenHeaderName, tokenValue)
+                                .contentType(APPLICATION_JSON)
+                                .content(requestBody)
+                )
+                .andExpect(status().isOk());
+
+        Team updatedTeam = teamRepository.findById(team.getId()).get();
+        TeamColor updatedTeamColor = teamColorRepository.findByUserIdAndTeamId(admin.getId(), team.getId());
+
+        Assertions.assertEquals(newName, updatedTeam.getName());
+        Assertions.assertEquals(newColor, updatedTeamColor.getColor());
     }
 }

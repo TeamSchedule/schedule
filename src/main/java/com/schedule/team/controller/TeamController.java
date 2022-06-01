@@ -7,7 +7,7 @@ import com.schedule.team.model.entity.TeamColor;
 import com.schedule.team.model.entity.User;
 import com.schedule.team.model.request.CreateDefaultTeamRequest;
 import com.schedule.team.model.request.CreateTeamRequest;
-import com.schedule.team.model.request.PatchTeamRequest;
+import com.schedule.team.model.request.UpdateTeamRequest;
 import com.schedule.team.model.response.CreateTeamResponse;
 import com.schedule.team.model.response.GetTeamByIdResponse;
 import com.schedule.team.model.response.GetTeamsResponse;
@@ -138,21 +138,22 @@ public class TeamController {
         return ResponseEntity.noContent().build();
     }
 
+    // TODO: security checks
     @PatchMapping("/{teamId}")
     public ResponseEntity<?> patch(
             @PathVariable Long teamId,
-            @RequestBody PatchTeamRequest patchTeamRequest,
+            @RequestBody UpdateTeamRequest updateTeamRequest,
             HttpServletRequest request
     ) {
         Team team = getTeamByIdService.get(teamId);
 
-        if (patchTeamRequest.getNewName() != null) {
-            updateTeamService.update(team, patchTeamRequest.getNewName());
+        if (updateTeamRequest.getNewName() != null) {
+            updateTeamService.update(team, updateTeamRequest.getNewName());
         }
 
-        if (patchTeamRequest.getColor() != null) {
+        if (updateTeamRequest.getColor() != null) {
             Long userId = extractClaimsFromRequestService.extract(request).getId();
-            updateTeamColorService.update(teamId, userId, patchTeamRequest.getColor());
+            updateTeamColorService.update(teamId, userId, updateTeamRequest.getColor());
         }
 
         return ResponseEntity.ok().build();
