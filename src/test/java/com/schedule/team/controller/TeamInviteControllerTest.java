@@ -2,10 +2,12 @@ package com.schedule.team.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.schedule.team.IntegrationTest;
+import com.schedule.team.model.TeamInviteStatus;
 import com.schedule.team.model.entity.Team;
 import com.schedule.team.model.entity.TeamInvite;
 import com.schedule.team.model.entity.User;
 import com.schedule.team.model.request.CreateTeamInviteRequest;
+import com.schedule.team.model.request.UpdateTeamInviteRequest;
 import com.schedule.team.model.response.CreateTeamInviteResponse;
 import com.schedule.team.repository.TeamColorRepository;
 import com.schedule.team.repository.TeamInviteRepository;
@@ -20,10 +22,11 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @AutoConfigureMockMvc
@@ -102,5 +105,37 @@ public class TeamInviteControllerTest extends IntegrationTest {
         Assertions.assertEquals(team.getId(), teamInvite.getTeam().getId());
         Assertions.assertEquals(inviting.getId(), teamInvite.getInviting().getId());
         Assertions.assertEquals(invited.getId(), teamInvite.getInvited().getId());
+    }
+
+    @Test
+    void updateTeamInviteAcceptedTest() throws Exception {
+        User inviting = userRepository.save(new User(1L));
+        Team team = teamRepository.save(new Team(
+                "team", LocalDate.now(), inviting
+        ));
+
+        User invited = userRepository.save(new User(2L));
+        TeamInvite teamInvite = teamInviteRepository.save(new TeamInvite(
+                team,
+                invited,
+                inviting,
+                LocalDateTime.now()
+        ));
+
+        UpdateTeamInviteRequest updateTeamInviteRequest = new UpdateTeamInviteRequest(TeamInviteStatus.ACCEPTED);
+        String requestBody = objectMapper.writeValueAsString(updateTeamInviteRequest);
+
+        mockMvc
+                .perform(
+                        patch("/team/invite/" + teamInvite.getId())
+                                .header(tokenHeaderName, tokenValue)
+                                .contentType(APPLICATION_JSON)
+                                .content(requestBody)
+                )
+                .andExpect(status().isOk());
+
+        TeamInvite updatedTeamInvite = teamInviteRepository.findById(teamInvite.getId()).get();
+        Assertions.assertEquals(TeamInviteStatus.ACCEPTED, updatedTeamInvite.getInviteStatus());
+        Assertions.assertTrue(teamColorRepository.existsByTeamAndUser(team, invited));
     }
 }

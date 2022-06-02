@@ -43,13 +43,12 @@ public class TeamInvite {
             Team team,
             User invited,
             User inviting,
-            LocalDateTime date,
-            TeamInviteStatus inviteStatus
+            LocalDateTime date
     ) {
         this.team = team;
         this.invited = invited;
         this.inviting = inviting;
         this.date = date;
-        this.inviteStatus = inviteStatus;
+        this.inviteStatus = TeamInviteStatus.OPEN;
     }
 }
