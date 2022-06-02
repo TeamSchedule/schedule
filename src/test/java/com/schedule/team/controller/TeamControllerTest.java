@@ -106,7 +106,7 @@ public class TeamControllerTest extends IntegrationTest {
 
     @Test
     void createTeamTest() throws Exception {
-        userRepository.save(new User(1L));
+        User user = userRepository.save(new User(1L));
 
         String teamName = "name";
         CreateTeamRequest createTeamRequest = new CreateTeamRequest(teamName);
@@ -128,6 +128,7 @@ public class TeamControllerTest extends IntegrationTest {
         Team team = teamRepository.findById(createTeamResponse.getTeamId()).get();
         Assertions.assertNotNull(team);
         Assertions.assertEquals(teamName, team.getName());
+        Assertions.assertTrue(teamColorRepository.existsByTeamAndUser(team, user));
     }
 
     @Test

@@ -1,6 +1,5 @@
 package com.schedule.team.service.team_invite;
 
-import com.schedule.team.model.TeamInviteStatus;
 import com.schedule.team.model.entity.Team;
 import com.schedule.team.model.entity.TeamInvite;
 import com.schedule.team.model.entity.User;
@@ -22,8 +21,7 @@ public class CreateTeamInviteServiceImpl implements CreateTeamInviteService {
                         team,
                         invited,
                         inviting,
-                        time,
-                        TeamInviteStatus.OPEN
+                        time
                 )
         );
     }

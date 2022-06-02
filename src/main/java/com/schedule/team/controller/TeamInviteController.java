@@ -7,7 +7,7 @@ import com.schedule.team.model.entity.Team;
 import com.schedule.team.model.entity.TeamInvite;
 import com.schedule.team.model.entity.User;
 import com.schedule.team.model.request.CreateTeamInviteRequest;
-import com.schedule.team.model.request.PatchTeamInviteRequest;
+import com.schedule.team.model.request.UpdateTeamInviteRequest;
 import com.schedule.team.model.response.CreateTeamInviteResponse;
 import com.schedule.team.model.response.GetTeamInvitesResponse;
 import com.schedule.team.service.jwt.ExtractClaimsFromRequestService;
@@ -99,18 +99,19 @@ public class TeamInviteController {
         );
     }
 
-    @PatchMapping
+    @PatchMapping("/{teamInviteId}")
     public ResponseEntity<?> patch(
-            @RequestBody PatchTeamInviteRequest patchTeamInviteRequest
+            @RequestBody UpdateTeamInviteRequest updateTeamInviteRequest,
+            @PathVariable Long teamInviteId
     ) {
-        TeamInvite teamInvite = getTeamInviteByIdService.get(patchTeamInviteRequest.getId());
+        TeamInvite teamInvite = getTeamInviteByIdService.get(teamInviteId);
         // TODO: check if invited or inviting
         updateTeamInviteService.patch(
                 teamInvite,
-                patchTeamInviteRequest.getStatus()
+                updateTeamInviteRequest.getStatus()
         );
 
-        if (TeamInviteStatus.ACCEPTED.equals(patchTeamInviteRequest.getStatus())) {
+        if (TeamInviteStatus.ACCEPTED.equals(updateTeamInviteRequest.getStatus())) {
             joinTeamService.join(
                     teamInvite.getTeam(),
                     teamInvite.getInvited()
