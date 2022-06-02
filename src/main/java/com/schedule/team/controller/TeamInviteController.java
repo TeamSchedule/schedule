@@ -99,11 +99,12 @@ public class TeamInviteController {
         );
     }
 
-    @PatchMapping
+    @PatchMapping("/{teamInviteId}")
     public ResponseEntity<?> patch(
-            @RequestBody PatchTeamInviteRequest patchTeamInviteRequest
+            @RequestBody PatchTeamInviteRequest patchTeamInviteRequest,
+            @PathVariable Long teamInviteId
     ) {
-        TeamInvite teamInvite = getTeamInviteByIdService.get(patchTeamInviteRequest.getId());
+        TeamInvite teamInvite = getTeamInviteByIdService.get(teamInviteId);
         // TODO: check if invited or inviting
         updateTeamInviteService.patch(
                 teamInvite,
