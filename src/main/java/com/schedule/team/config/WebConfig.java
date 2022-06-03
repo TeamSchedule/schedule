@@ -11,13 +11,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @EnableWebMvc
 public class WebConfig implements WebMvcConfigurer {
     @Override
-    public void addCorsMappings(CorsRegistry registry) {
-        registry
-                .addMapping("/**")
-                .allowedMethods("*");
-    }
-
-    @Override
     public void addFormatters(FormatterRegistry registry) {
         registry.addConverter(new StringToGetTeamInviteCriteriaConverter());
     }
