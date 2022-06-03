@@ -1,17 +1,19 @@
 package com.schedule.team.model.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.schedule.team.model.entity.team.DefaultTeam;
+import lombok.*;
 
 import javax.persistence.*;
 
 @Entity(name = "app_user")
-@Data
+@Setter
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
 public class User {
     @Id
     private Long id;
-    // TODO: foreign key to private team
+
+    @OneToOne
+    private DefaultTeam defaultTeam;
 }

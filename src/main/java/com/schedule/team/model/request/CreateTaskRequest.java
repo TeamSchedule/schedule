@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Data
 @NoArgsConstructor
@@ -13,9 +14,6 @@ public class CreateTaskRequest {
     private String name;
     private String description;
     private LocalDateTime expirationTime;
-    // TODO: optional. If present -> add task to team tasks. If not present -> personal task
-    // TODO: add PersonalTeam entity
-    // TODO: add User#personalTeam field
-    private Long teamId;
+    private Optional<Long> teamId;
     private Long assigneeId;
 }

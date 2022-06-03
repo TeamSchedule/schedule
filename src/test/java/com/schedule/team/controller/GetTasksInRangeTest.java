@@ -5,13 +5,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.schedule.team.IntegrationTest;
 import com.schedule.team.model.dto.TaskDTO;
 import com.schedule.team.model.entity.Task;
-import com.schedule.team.model.entity.Team;
 import com.schedule.team.model.entity.User;
+import com.schedule.team.model.entity.team.PublicTeam;
 import com.schedule.team.model.response.GetTasksResponse;
 import com.schedule.team.repository.TaskRepository;
-import com.schedule.team.repository.TeamRepository;
-import com.schedule.team.repository.UserRepository;
+import com.schedule.team.repository.team.TeamRepository;
 import com.schedule.team.service.task.BuildTaskDtoService;
+import com.schedule.team.service.user.CreateUserService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,7 +36,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class GetTasksInRangeTest extends IntegrationTest {
     private final MockMvc mockMvc;
     private final TaskRepository taskRepository;
-    private final UserRepository userRepository;
+    private final CreateUserService createUserService;
     private final TeamRepository teamRepository;
     private final ObjectMapper objectMapper;
     private final String tokenHeaderName;
@@ -52,7 +52,7 @@ public class GetTasksInRangeTest extends IntegrationTest {
     public GetTasksInRangeTest(
             MockMvc mockMvc,
             TaskRepository taskRepository,
-            UserRepository userRepository,
+            CreateUserService createUserService,
             TeamRepository teamRepository,
             ObjectMapper objectMapper,
             @Value("${app.jwt.token.headerName}")
@@ -63,7 +63,7 @@ public class GetTasksInRangeTest extends IntegrationTest {
     ) {
         this.mockMvc = mockMvc;
         this.taskRepository = taskRepository;
-        this.userRepository = userRepository;
+        this.createUserService = createUserService;
         this.teamRepository = teamRepository;
         this.objectMapper = objectMapper;
         this.tokenHeaderName = tokenHeaderName;
@@ -81,8 +81,8 @@ public class GetTasksInRangeTest extends IntegrationTest {
 
     @BeforeEach
     public void beforeEach() {
-        User author = userRepository.save(new User(1L));
-        Team team = teamRepository.save(new Team("test", LocalDate.now(), author));
+        User author = createUserService.create(1L);
+        PublicTeam team = teamRepository.save(new PublicTeam("test", LocalDate.now(), author));
 
         String taskName = "test";
         String taskDescription = "description";

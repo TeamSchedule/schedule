@@ -12,5 +12,4 @@ import java.util.List;
 @AllArgsConstructor
 public class GetTeamsResponse {
     private List<TeamDescriptionDTO> teams;
-    private Long defaultTeamId;
 }

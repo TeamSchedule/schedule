@@ -1,8 +1,8 @@
 package com.schedule.team.service.team;
 
-import com.schedule.team.model.entity.Team;
 import com.schedule.team.model.entity.User;
+import com.schedule.team.model.entity.team.PublicTeam;
 
 public interface LeaveTeamService {
-    void leave(Team team, User user);
+    void leave(PublicTeam team, User user);
 }

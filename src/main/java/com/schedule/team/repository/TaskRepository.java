@@ -1,7 +1,7 @@
 package com.schedule.team.repository;
 
 import com.schedule.team.model.entity.Task;
-import com.schedule.team.model.entity.Team;
+import com.schedule.team.model.entity.team.Team;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

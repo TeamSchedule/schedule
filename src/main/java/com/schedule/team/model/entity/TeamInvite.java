@@ -1,14 +1,17 @@
 package com.schedule.team.model.entity;
 
 import com.schedule.team.model.TeamInviteStatus;
-import lombok.Data;
+import com.schedule.team.model.entity.team.PublicTeam;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 public class TeamInvite {
     @Id
@@ -24,7 +27,7 @@ public class TeamInvite {
     private Long id;
 
     @ManyToOne
-    private Team team;
+    private PublicTeam team;
 
     @ManyToOne
     private User invited;
@@ -40,7 +43,7 @@ public class TeamInvite {
     private TeamInviteStatus inviteStatus;
 
     public TeamInvite(
-            Team team,
+            PublicTeam team,
             User invited,
             User inviting,
             LocalDateTime date

@@ -1,11 +1,11 @@
 package com.schedule.team.service.team_invite;
 
-import com.schedule.team.model.entity.Team;
 import com.schedule.team.model.entity.TeamInvite;
 import com.schedule.team.model.entity.User;
+import com.schedule.team.model.entity.team.PublicTeam;
 
 import java.time.LocalDateTime;
 
 public interface CreateTeamInviteService {
-    TeamInvite create(Team team, User inviting, User invited, LocalDateTime time);
+    TeamInvite create(PublicTeam team, User inviting, User invited, LocalDateTime time);
 }

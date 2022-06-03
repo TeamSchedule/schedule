@@ -4,14 +4,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.schedule.team.IntegrationTest;
 import com.schedule.team.model.dto.TaskDTO;
 import com.schedule.team.model.entity.Task;
-import com.schedule.team.model.entity.Team;
 import com.schedule.team.model.entity.User;
+import com.schedule.team.model.entity.team.PublicTeam;
 import com.schedule.team.model.request.CreateTaskRequest;
 import com.schedule.team.model.request.PatchTaskRequest;
 import com.schedule.team.model.response.CreateTaskResponse;
 import com.schedule.team.repository.TaskRepository;
-import com.schedule.team.repository.TeamRepository;
-import com.schedule.team.repository.UserRepository;
+import com.schedule.team.repository.team.TeamRepository;
+import com.schedule.team.service.user.CreateUserService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -22,6 +22,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -31,7 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class TaskControllerTest extends IntegrationTest {
     private final MockMvc mockMvc;
     private final TaskRepository taskRepository;
-    private final UserRepository userRepository;
+    private final CreateUserService createUserService;
     private final TeamRepository teamRepository;
     private final ObjectMapper objectMapper;
     private final String tokenHeaderName;
@@ -41,8 +42,7 @@ public class TaskControllerTest extends IntegrationTest {
     public TaskControllerTest(
             MockMvc mockMvc,
             TaskRepository taskRepository,
-            UserRepository userRepository,
-            TeamRepository teamRepository,
+            CreateUserService createUserService, TeamRepository teamRepository,
             ObjectMapper objectMapper,
             @Value("${app.jwt.token.headerName}")
                     String tokenHeaderName,
@@ -51,7 +51,7 @@ public class TaskControllerTest extends IntegrationTest {
     ) {
         this.mockMvc = mockMvc;
         this.taskRepository = taskRepository;
-        this.userRepository = userRepository;
+        this.createUserService = createUserService;
         this.teamRepository = teamRepository;
         this.objectMapper = objectMapper;
         this.tokenHeaderName = tokenHeaderName;
@@ -64,11 +64,11 @@ public class TaskControllerTest extends IntegrationTest {
     }
 
     @Test
-    void createTaskTest() throws Exception {
-        User author = userRepository.save(new User(1L));
-        User assignee = userRepository.save(new User(2L));
+    void createPublicTaskTest() throws Exception {
+        User author = createUserService.create(1L);
+        User assignee = createUserService.create(2L);
 
-        Team team = teamRepository.save(new Team("test", LocalDate.now(), author));
+        PublicTeam team = teamRepository.save(new PublicTeam("test", LocalDate.now(), author));
 
         String taskName = "test";
         String taskDescription = "description";
@@ -78,7 +78,7 @@ public class TaskControllerTest extends IntegrationTest {
                 taskName,
                 taskDescription,
                 taskExpirationTime,
-                team.getId(),
+                Optional.of(team.getId()),
                 assignee.getId()
         );
         String requestBody = objectMapper.writeValueAsString(createTaskRequest);
@@ -106,10 +106,50 @@ public class TaskControllerTest extends IntegrationTest {
     }
 
     @Test
+    void createPrivateTaskTest() throws Exception {
+        User author = createUserService.create(1L);
+
+        String taskName = "test";
+        String taskDescription = "description";
+        LocalDateTime taskExpirationTime = LocalDateTime.of(12, 12, 12, 12, 12, 12);
+
+        CreateTaskRequest createTaskRequest = new CreateTaskRequest(
+                taskName,
+                taskDescription,
+                taskExpirationTime,
+                Optional.empty(),
+                author.getId()
+        );
+        String requestBody = objectMapper.writeValueAsString(createTaskRequest);
+
+        String response = mockMvc
+                .perform(
+                        post("/task/")
+                                .header(tokenHeaderName, tokenValue)
+                                .contentType(APPLICATION_JSON)
+                                .content(requestBody)
+                )
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        CreateTaskResponse createTaskResponse = objectMapper.readValue(response, CreateTaskResponse.class);
+
+        Task task = taskRepository.findById(createTaskResponse.getId()).get();
+        Assertions.assertNotNull(task);
+        Assertions.assertEquals(taskName, task.getName());
+        Assertions.assertEquals(taskDescription, task.getDescription());
+        Assertions.assertEquals(taskExpirationTime, task.getExpirationTime());
+        Assertions.assertEquals(author.getDefaultTeam().getId(), task.getTeam().getId());
+        Assertions.assertEquals(author.getId(), task.getAssignee().getId());
+    }
+
+    @Test
     void getTaskByIdTest() throws Exception {
-        User author = userRepository.save(new User(1L));
-        User assignee = userRepository.save(new User(2L));
-        Team team = teamRepository.save(new Team("test", LocalDate.now(), author));
+        User author = createUserService.create(1L);
+        User assignee = createUserService.create(2L);
+        PublicTeam team = teamRepository.save(new PublicTeam("test", LocalDate.now(), author));
 
         String taskName = "test";
         String taskDescription = "description";
@@ -130,7 +170,7 @@ public class TaskControllerTest extends IntegrationTest {
 
         String response = mockMvc
                 .perform(
-                        get("/task/"+task.getId())
+                        get("/task/" + task.getId())
                                 .header(tokenHeaderName, tokenValue)
                 )
                 .andExpect(status().isOk())
@@ -152,9 +192,9 @@ public class TaskControllerTest extends IntegrationTest {
 
     @Test
     void deleteTaskTest() throws Exception {
-        User author = userRepository.save(new User(1L));
-        User assignee = userRepository.save(new User(2L));
-        Team team = teamRepository.save(new Team("test", LocalDate.now(), author));
+        User author = createUserService.create(1L);
+        User assignee = createUserService.create(2L);
+        PublicTeam team = teamRepository.save(new PublicTeam("test", LocalDate.now(), author));
 
         String taskName = "test";
         String taskDescription = "description";
@@ -175,7 +215,7 @@ public class TaskControllerTest extends IntegrationTest {
 
         mockMvc
                 .perform(
-                        delete("/task/"+task.getId())
+                        delete("/task/" + task.getId())
                                 .header(tokenHeaderName, tokenValue)
                 )
                 .andExpect(status().isOk());
@@ -184,9 +224,9 @@ public class TaskControllerTest extends IntegrationTest {
 
     @Test
     void updateTaskTest() throws Exception {
-        User author = userRepository.save(new User(1L));
-        User assignee = userRepository.save(new User(2L));
-        Team team = teamRepository.save(new Team("test", LocalDate.now(), author));
+        User author = createUserService.create(1L);
+        User assignee = createUserService.create(2L);
+        PublicTeam team = teamRepository.save(new PublicTeam("test", LocalDate.now(), author));
 
         Task task = taskRepository.save(
                 new Task(
@@ -215,7 +255,7 @@ public class TaskControllerTest extends IntegrationTest {
 
         mockMvc
                 .perform(
-                        patch("/task/"+task.getId())
+                        patch("/task/" + task.getId())
                                 .header(tokenHeaderName, tokenValue)
                                 .contentType(APPLICATION_JSON)
                                 .content(requestBody)

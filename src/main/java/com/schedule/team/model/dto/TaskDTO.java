@@ -1,7 +1,6 @@
 package com.schedule.team.model.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.schedule.team.model.dto.team.TeamDTO;
 import com.schedule.team.model.dto.team.TeamShortDescriptionDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;

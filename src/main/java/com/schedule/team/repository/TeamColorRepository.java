@@ -1,6 +1,6 @@
 package com.schedule.team.repository;
 
-import com.schedule.team.model.entity.Team;
+import com.schedule.team.model.entity.team.Team;
 import com.schedule.team.model.entity.TeamColor;
 import com.schedule.team.model.entity.TeamColorKey;
 import com.schedule.team.model.entity.User;

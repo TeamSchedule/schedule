@@ -2,7 +2,7 @@ package com.schedule.team.controller;
 
 import com.schedule.team.model.dto.TaskDTO;
 import com.schedule.team.model.entity.Task;
-import com.schedule.team.model.entity.Team;
+import com.schedule.team.model.entity.team.Team;
 import com.schedule.team.model.entity.User;
 import com.schedule.team.model.request.CreateTaskRequest;
 import com.schedule.team.model.request.PatchTaskRequest;
@@ -11,8 +11,8 @@ import com.schedule.team.model.response.GetTasksResponse;
 import com.schedule.team.service.jwt.ExtractClaimsFromRequestService;
 import com.schedule.team.service.jwt.ExtractUserFromRequestService;
 import com.schedule.team.service.task.*;
-import com.schedule.team.service.team.GetTeamByIdService;
-import com.schedule.team.service.team.GetTeamsListByIdService;
+import com.schedule.team.service.team.get.GetTeamByIdService;
+import com.schedule.team.service.team.get.GetTeamsListByIdService;
 import com.schedule.team.service.user.GetUserByIdService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -47,7 +47,7 @@ public class TaskController {
     ) {
         User creator = extractUserFromRequestService.extract(request);
         User assignee = getUserByIdService.get(createTaskRequest.getAssigneeId());
-        Team team = getTeamByIdService.get(createTaskRequest.getTeamId());
+        Team team = getTeamByIdService.get(createTaskRequest.getTeamId().orElse(creator.getDefaultTeam().getId()));
 
         Task task = createTaskService.create(
                 createTaskRequest.getName(),
