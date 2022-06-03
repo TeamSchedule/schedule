@@ -2,13 +2,16 @@ package com.schedule.team.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.schedule.team.IntegrationTest;
+import com.schedule.team.model.GetTeamInviteCriteria;
 import com.schedule.team.model.TeamInviteStatus;
+import com.schedule.team.model.dto.TeamInviteDTO;
 import com.schedule.team.model.entity.Team;
 import com.schedule.team.model.entity.TeamInvite;
 import com.schedule.team.model.entity.User;
 import com.schedule.team.model.request.CreateTeamInviteRequest;
 import com.schedule.team.model.request.UpdateTeamInviteRequest;
 import com.schedule.team.model.response.CreateTeamInviteResponse;
+import com.schedule.team.model.response.GetTeamInvitesResponse;
 import com.schedule.team.repository.TeamColorRepository;
 import com.schedule.team.repository.TeamInviteRepository;
 import com.schedule.team.repository.TeamRepository;
@@ -137,5 +140,90 @@ public class TeamInviteControllerTest extends IntegrationTest {
         TeamInvite updatedTeamInvite = teamInviteRepository.findById(teamInvite.getId()).get();
         Assertions.assertEquals(TeamInviteStatus.ACCEPTED, updatedTeamInvite.getInviteStatus());
         Assertions.assertTrue(teamColorRepository.existsByTeamAndUser(team, invited));
+    }
+
+    @Test
+    void getOpenTeamInvitesTest() throws Exception {
+        User inviting = userRepository.save(new User(1L));
+        User invited = userRepository.save(new User(2L));
+
+        Team firstTeam = teamRepository.save(new Team("test", LocalDate.of(10, 10, 10), inviting));
+        Team secondTeam = teamRepository.save(new Team("test2", LocalDate.of(10, 10, 10), inviting));
+        TeamInvite firstTeamInvite = teamInviteRepository.save(new TeamInvite(
+                firstTeam, invited, inviting, LocalDateTime.now()
+        ));
+        TeamInvite secondTeamInvite = teamInviteRepository.save(new TeamInvite(
+                secondTeam, invited, inviting, LocalDateTime.now()
+        ));
+
+        String response = mockMvc
+                .perform(
+                        get("/team/invite/")
+                                .header(tokenHeaderName, tokenValue)
+                                .queryParam("criteria", GetTeamInviteCriteria.INVITING.toString())
+                                .queryParam("status", TeamInviteStatus.OPEN.toString())
+                )
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        GetTeamInvitesResponse getTeamInvitesResponse = objectMapper.readValue(response, GetTeamInvitesResponse.class);
+
+        Assertions.assertEquals(2, getTeamInvitesResponse.getTeamInvites().size());
+
+        TeamInviteDTO firstTeamInviteDTO = getTeamInvitesResponse.getTeamInvites().get(0);
+        Assertions.assertEquals(firstTeamInvite.getId(), firstTeamInviteDTO.getId());
+        Assertions.assertEquals(firstTeam.getId(), firstTeamInviteDTO.getTeam().getId());
+        Assertions.assertEquals(firstTeam.getName(), firstTeamInviteDTO.getTeam().getName());
+        Assertions.assertEquals(TeamInviteStatus.OPEN, firstTeamInviteDTO.getInviteStatus());
+        Assertions.assertEquals(invited.getId(), firstTeamInviteDTO.getInvitedId());
+        Assertions.assertEquals(inviting.getId(), firstTeamInviteDTO.getInvitingId());
+
+        TeamInviteDTO secondTeamInviteDTO = getTeamInvitesResponse.getTeamInvites().get(1);
+        Assertions.assertEquals(secondTeamInvite.getId(), secondTeamInviteDTO.getId());
+        Assertions.assertEquals(secondTeam.getId(), secondTeamInviteDTO.getTeam().getId());
+        Assertions.assertEquals(secondTeam.getName(), secondTeamInviteDTO.getTeam().getName());
+        Assertions.assertEquals(TeamInviteStatus.OPEN, secondTeamInviteDTO.getInviteStatus());
+        Assertions.assertEquals(invited.getId(), secondTeamInviteDTO.getInvitedId());
+        Assertions.assertEquals(inviting.getId(), secondTeamInviteDTO.getInvitingId());
+    }
+
+    @Test
+    void getOpenTeamInviteFromTeamTest() throws Exception {
+        User invited = userRepository.save(new User(1L));
+        User inviting = userRepository.save(new User(2L));
+
+        Team firstTeam = teamRepository.save(new Team("test", LocalDate.of(10, 10, 10), inviting));
+        Team secondTeam = teamRepository.save(new Team("test2", LocalDate.of(10, 10, 10), inviting));
+        TeamInvite firstTeamInvite = teamInviteRepository.save(new TeamInvite(
+                firstTeam, invited, inviting, LocalDateTime.now()
+        ));
+        teamInviteRepository.save(new TeamInvite(
+                secondTeam, invited, inviting, LocalDateTime.now()
+        ));
+
+        String response = mockMvc
+                .perform(
+                        get("/team/invite/")
+                                .header(tokenHeaderName, tokenValue)
+                                .queryParam("criteria", GetTeamInviteCriteria.INVITED.toString())
+                                .queryParam("status", TeamInviteStatus.OPEN.toString())
+                                .queryParam("teamId", String.valueOf(firstTeam.getId()))
+                )
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        GetTeamInvitesResponse getTeamInvitesResponse = objectMapper.readValue(response, GetTeamInvitesResponse.class);
+        Assertions.assertEquals(1, getTeamInvitesResponse.getTeamInvites().size());
+
+        TeamInviteDTO firstTeamInviteDTO = getTeamInvitesResponse.getTeamInvites().get(0);
+        Assertions.assertEquals(firstTeamInvite.getId(), firstTeamInviteDTO.getId());
+        Assertions.assertEquals(firstTeam.getId(), firstTeamInviteDTO.getTeam().getId());
+        Assertions.assertEquals(firstTeam.getName(), firstTeamInviteDTO.getTeam().getName());
+        Assertions.assertEquals(TeamInviteStatus.OPEN, firstTeamInviteDTO.getInviteStatus());
+        Assertions.assertEquals(invited.getId(), firstTeamInviteDTO.getInvitedId());
+        Assertions.assertEquals(inviting.getId(), firstTeamInviteDTO.getInvitingId());
     }
 }

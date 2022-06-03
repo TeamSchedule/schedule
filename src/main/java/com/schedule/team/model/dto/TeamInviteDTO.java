@@ -16,7 +16,7 @@ public class TeamInviteDTO {
     private Long id;
     private Long invitingId;
     private Long invitedId;
-    @JsonFormat(pattern = "yyyy-MM-dd")
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private LocalDateTime date;
     private TeamInviteStatus inviteStatus;
     private TeamShortDescriptionDTO team;
