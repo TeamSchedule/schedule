@@ -1,6 +1,7 @@
 package com.schedule.team.service.team;
 
-import com.schedule.team.model.entity.Team;
+import com.schedule.team.model.entity.team.PublicTeam;
+import com.schedule.team.model.entity.team.Team;
 import com.schedule.team.model.entity.User;
 import com.schedule.team.repository.TeamColorRepository;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +16,7 @@ public class LeaveTeamServiceImpl implements LeaveTeamService {
 
     @Override
     @Transactional
-    public void leave(Team team, User user) {
+    public void leave(PublicTeam team, User user) {
         teamColorRepository.deleteByTeamAndUser(team, user);
     }
 }

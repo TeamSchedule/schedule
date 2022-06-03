@@ -2,9 +2,10 @@ package com.schedule.team.controller;
 
 import com.schedule.team.model.dto.team.TeamDTO;
 import com.schedule.team.model.dto.team.TeamDescriptionDTO;
-import com.schedule.team.model.entity.Team;
 import com.schedule.team.model.entity.TeamColor;
 import com.schedule.team.model.entity.User;
+import com.schedule.team.model.entity.team.PublicTeam;
+import com.schedule.team.model.entity.team.Team;
 import com.schedule.team.model.request.CreateDefaultTeamRequest;
 import com.schedule.team.model.request.CreateTeamRequest;
 import com.schedule.team.model.request.UpdateTeamRequest;
@@ -13,7 +14,11 @@ import com.schedule.team.model.response.GetTeamByIdResponse;
 import com.schedule.team.model.response.GetTeamsResponse;
 import com.schedule.team.service.jwt.ExtractClaimsFromRequestService;
 import com.schedule.team.service.jwt.ExtractUserFromRequestService;
-import com.schedule.team.service.team.*;
+import com.schedule.team.service.team.BuildTeamDescriptionDTOService;
+import com.schedule.team.service.team.CreatePublicTeamService;
+import com.schedule.team.service.team.LeaveTeamService;
+import com.schedule.team.service.team.UpdateTeamService;
+import com.schedule.team.service.team.get.GetPublicTeamByIdService;
 import com.schedule.team.service.team_color.GetTeamColorByUserIdAndTeamIdService;
 import com.schedule.team.service.team_color.GetTeamColorsByUserIdService;
 import com.schedule.team.service.team_color.UpdateTeamColorService;
@@ -35,29 +40,20 @@ public class TeamController {
     private final GetTeamColorsByUserIdService getTeamColorsByUserIdService;
     private final GetTeamColorByUserIdAndTeamIdService getTeamColorByUserIdAndTeamIdService;
     private final ExtractUserFromRequestService extractUserFromRequestService;
-    private final CreateTeamService createTeamService;
+    private final CreatePublicTeamService createPublicTeamService;
     private final LeaveTeamService leaveTeamService;
-    private final GetTeamByIdService getTeamByIdService;
     private final UpdateTeamService updateTeamService;
     private final UpdateTeamColorService updateTeamColorService;
     private final CreateUserService createUserService;
     private final BuildTeamDescriptionDTOService buildTeamDescriptionDTOService;
+    private final GetPublicTeamByIdService getPublicTeamByIdService;
 
     @PostMapping("/default")
-    public ResponseEntity<CreateTeamResponse> createDefaultTeam(
+    public ResponseEntity<?> createDefaultTeam(
             @RequestBody CreateDefaultTeamRequest createDefaultTeamRequest
     ) {
-        User creator = createUserService.create(createDefaultTeamRequest.getUserId());
-        Team team = createTeamService.create(
-                String.valueOf(createDefaultTeamRequest.getUserId()),
-                LocalDate.now(),
-                creator
-        );
-        return ResponseEntity.status(HttpStatus.CREATED).body(
-                new CreateTeamResponse(
-                        team.getId()
-                )
-        );
+        createUserService.create(createDefaultTeamRequest.getUserId());
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @PostMapping
@@ -66,7 +62,7 @@ public class TeamController {
             HttpServletRequest request
     ) {
         User creator = extractUserFromRequestService.extract(request);
-        Team team = createTeamService.create(
+        Team team = createPublicTeamService.create(
                 createTeamRequest.getName(),
                 LocalDate.now(),
                 creator
@@ -85,7 +81,7 @@ public class TeamController {
     ) {
         Long userId = extractUserFromRequestService.extract(request).getId();
         TeamColor teamColor = getTeamColorByUserIdAndTeamIdService.get(userId, teamId);
-        Team team = teamColor.getTeam();
+        PublicTeam team = teamColor.getTeam();
 
         return ResponseEntity.ok().body(
                 new GetTeamByIdResponse(
@@ -104,15 +100,8 @@ public class TeamController {
     @GetMapping
     public ResponseEntity<GetTeamsResponse> get(HttpServletRequest request) {
         Long userId = extractClaimsFromRequestService.extract(request).getId();
-        List<TeamColor> teamColors = getTeamColorsByUserIdService.get(userId);
-        TeamColor defaultTeamColor = teamColors
-                .stream()
-                .filter(teamColor -> teamColor.getTeam().getName().equals(String.valueOf(userId)))
-                .findFirst()
-                .get();
-        teamColors.remove(defaultTeamColor);
-
-        List<TeamDescriptionDTO> teamDescriptionDTOS = teamColors
+        List<TeamDescriptionDTO> teamDescriptionDTOS = getTeamColorsByUserIdService
+                .get(userId)
                 .stream()
                 .map(teamColor -> buildTeamDescriptionDTOService.build(
                         teamColor.getTeam(),
@@ -120,8 +109,7 @@ public class TeamController {
                 )).toList();
         return ResponseEntity.ok().body(
                 new GetTeamsResponse(
-                        teamDescriptionDTOS,
-                        defaultTeamColor.getTeam().getId()
+                        teamDescriptionDTOS
                 )
         );
     }
@@ -132,7 +120,7 @@ public class TeamController {
             HttpServletRequest request
     ) {
         leaveTeamService.leave(
-                getTeamByIdService.get(teamId),
+                getPublicTeamByIdService.get(teamId),
                 extractUserFromRequestService.extract(request)
         );
         return ResponseEntity.noContent().build();
@@ -145,7 +133,7 @@ public class TeamController {
             @RequestBody UpdateTeamRequest updateTeamRequest,
             HttpServletRequest request
     ) {
-        Team team = getTeamByIdService.get(teamId);
+        PublicTeam team = getPublicTeamByIdService.get(teamId);
 
         if (updateTeamRequest.getNewName() != null) {
             updateTeamService.update(team, updateTeamRequest.getNewName());

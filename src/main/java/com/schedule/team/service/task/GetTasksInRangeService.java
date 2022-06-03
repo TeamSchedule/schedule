@@ -1,7 +1,7 @@
 package com.schedule.team.service.task;
 
 import com.schedule.team.model.entity.Task;
-import com.schedule.team.model.entity.Team;
+import com.schedule.team.model.entity.team.Team;
 
 import java.time.LocalDateTime;
 import java.util.List;

@@ -5,9 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.schedule.team.IntegrationTest;
 import com.schedule.team.model.dto.team.TeamDTO;
 import com.schedule.team.model.dto.team.TeamDescriptionDTO;
-import com.schedule.team.model.entity.Team;
 import com.schedule.team.model.entity.TeamColor;
 import com.schedule.team.model.entity.User;
+import com.schedule.team.model.entity.team.PublicTeam;
 import com.schedule.team.model.request.CreateDefaultTeamRequest;
 import com.schedule.team.model.request.CreateTeamRequest;
 import com.schedule.team.model.request.UpdateTeamRequest;
@@ -15,9 +15,11 @@ import com.schedule.team.model.response.CreateTeamResponse;
 import com.schedule.team.model.response.GetTeamByIdResponse;
 import com.schedule.team.model.response.GetTeamsResponse;
 import com.schedule.team.repository.TeamColorRepository;
-import com.schedule.team.repository.TeamRepository;
 import com.schedule.team.repository.UserRepository;
+import com.schedule.team.repository.team.PublicTeamRepository;
+import com.schedule.team.repository.team.TeamRepository;
 import com.schedule.team.service.team.JoinTeamService;
+import com.schedule.team.service.user.CreateUserService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -44,6 +46,8 @@ public class TeamControllerTest extends IntegrationTest {
     private final String tokenHeaderName;
     private final String tokenValue;
     private final String defaultTeamColor;
+    private final PublicTeamRepository publicTeamRepository;
+    private final CreateUserService createUserService;
 
     @Autowired
     public TeamControllerTest(
@@ -58,8 +62,8 @@ public class TeamControllerTest extends IntegrationTest {
             @Value("${app.jwt.token.test}")
                     String tokenValue,
             @Value("${app.team.color.default}")
-                    String defaultTeamColor
-    ) {
+                    String defaultTeamColor,
+            PublicTeamRepository publicTeamRepository, CreateUserService createUserService) {
         this.mockMvc = mockMvc;
         this.objectMapper = objectMapper;
         this.teamRepository = teamRepository;
@@ -69,6 +73,8 @@ public class TeamControllerTest extends IntegrationTest {
         this.tokenHeaderName = tokenHeaderName;
         this.tokenValue = tokenValue;
         this.defaultTeamColor = defaultTeamColor;
+        this.publicTeamRepository = publicTeamRepository;
+        this.createUserService = createUserService;
     }
 
     @AfterEach
@@ -82,31 +88,24 @@ public class TeamControllerTest extends IntegrationTest {
         CreateDefaultTeamRequest createDefaultTeamRequest = new CreateDefaultTeamRequest(userId);
         String createDefaultTeamRequestBody = objectMapper.writeValueAsString(createDefaultTeamRequest);
 
-        String response = mockMvc
+        mockMvc
                 .perform(
                         post("/team/default")
                                 .contentType(APPLICATION_JSON)
                                 .content(createDefaultTeamRequestBody)
-                                .header(tokenHeaderName, tokenValue)
                 )
-                .andExpect(status().isCreated())
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
-        CreateTeamResponse createTeamResponse = objectMapper.readValue(response, CreateTeamResponse.class);
+                .andExpect(status().isCreated());
 
         User user = userRepository.findById(userId).get();
         Assertions.assertNotNull(user);
         Assertions.assertEquals(userId, user.getId());
-
-        Team team = teamRepository.findById(createTeamResponse.getTeamId()).get();
-        Assertions.assertNotNull(team);
-        Assertions.assertEquals(String.valueOf(userId), team.getName());
+        Assertions.assertNotNull(user.getDefaultTeam());
+        Assertions.assertEquals(defaultTeamColor, user.getDefaultTeam().getColor());
     }
 
     @Test
     void createTeamTest() throws Exception {
-        User user = userRepository.save(new User(1L));
+        User user = createUserService.create(1L);
 
         String teamName = "name";
         CreateTeamRequest createTeamRequest = new CreateTeamRequest(teamName);
@@ -125,7 +124,7 @@ public class TeamControllerTest extends IntegrationTest {
                 .getContentAsString();
         CreateTeamResponse createTeamResponse = objectMapper.readValue(response, CreateTeamResponse.class);
 
-        Team team = teamRepository.findById(createTeamResponse.getTeamId()).get();
+        PublicTeam team = publicTeamRepository.findById(createTeamResponse.getTeamId()).get();
         Assertions.assertNotNull(team);
         Assertions.assertEquals(teamName, team.getName());
         Assertions.assertTrue(teamColorRepository.existsByTeamAndUser(team, user));
@@ -133,12 +132,12 @@ public class TeamControllerTest extends IntegrationTest {
 
     @Test
     void getTeamByIdTest() throws Exception {
-        User admin = userRepository.save(new User(1L));
-        User member = userRepository.save(new User(2L));
+        User admin = createUserService.create(1L);
+        User member = createUserService.create(2L);
 
         String teamName = "test";
         LocalDate creationDate = LocalDate.of(10, 10, 10);
-        Team team = teamRepository.save(new Team(teamName, creationDate, admin));
+        PublicTeam team = teamRepository.save(new PublicTeam(teamName, creationDate, admin));
         joinTeamService.join(team, admin);
         joinTeamService.join(team, member);
 
@@ -168,23 +167,16 @@ public class TeamControllerTest extends IntegrationTest {
 
     @Test
     void getPersonalTeamsTest() throws Exception {
-        User admin = userRepository.save(new User(1L));
-
-        Team personalTeam = teamRepository.save(new Team(
-                String.valueOf(admin.getId()),
-                LocalDate.of(10, 10, 10),
-                admin
-        ));
-        joinTeamService.join(personalTeam, admin);
+        User admin = createUserService.create(1L);
 
         String firstTeamName = "test";
         LocalDate firstTeamCreationDate = LocalDate.of(10, 10, 10);
-        Team firstTeam = teamRepository.save(new Team(firstTeamName, firstTeamCreationDate, admin));
+        PublicTeam firstTeam = teamRepository.save(new PublicTeam(firstTeamName, firstTeamCreationDate, admin));
         joinTeamService.join(firstTeam, admin);
 
         String secondTeamName = "team2";
         LocalDate secondTeamCreationDate = LocalDate.of(11, 11, 11);
-        Team secondTeam = teamRepository.save(new Team(secondTeamName, secondTeamCreationDate, admin));
+        PublicTeam secondTeam = teamRepository.save(new PublicTeam(secondTeamName, secondTeamCreationDate, admin));
         joinTeamService.join(secondTeam, admin);
 
         String response = mockMvc
@@ -197,8 +189,6 @@ public class TeamControllerTest extends IntegrationTest {
                 .getResponse()
                 .getContentAsString();
         GetTeamsResponse getTeamsResponse = objectMapper.readValue(response, GetTeamsResponse.class);
-
-        Assertions.assertEquals(personalTeam.getId(), getTeamsResponse.getDefaultTeamId());
 
         List<TeamDescriptionDTO> teamDescriptionDTOS = getTeamsResponse.getTeams();
         Assertions.assertNotNull(teamDescriptionDTOS);
@@ -221,11 +211,11 @@ public class TeamControllerTest extends IntegrationTest {
 
     @Test
     void leaveTeamTest() throws Exception {
-        User admin = userRepository.save(new User(1L));
+        User admin = createUserService.create(1L);
 
         String teamName = "test";
         LocalDate creationDate = LocalDate.of(10, 10, 10);
-        Team team = teamRepository.save(new Team(teamName, creationDate, admin));
+        PublicTeam team = teamRepository.save(new PublicTeam(teamName, creationDate, admin));
         joinTeamService.join(team, admin);
 
         mockMvc
@@ -240,11 +230,11 @@ public class TeamControllerTest extends IntegrationTest {
 
     @Test
     void patchTeamTest() throws Exception {
-        User admin = userRepository.save(new User(1L));
+        User admin = createUserService.create(1L);
 
         String teamName = "test";
         LocalDate creationDate = LocalDate.of(10, 10, 10);
-        Team team = teamRepository.save(new Team(teamName, creationDate, admin));
+        PublicTeam team = teamRepository.save(new PublicTeam(teamName, creationDate, admin));
         joinTeamService.join(team, admin);
 
         String newName = "new name";
@@ -261,7 +251,7 @@ public class TeamControllerTest extends IntegrationTest {
                 )
                 .andExpect(status().isOk());
 
-        Team updatedTeam = teamRepository.findById(team.getId()).get();
+        PublicTeam updatedTeam = publicTeamRepository.findById(team.getId()).get();
         TeamColor updatedTeamColor = teamColorRepository.findByUserIdAndTeamId(admin.getId(), team.getId());
 
         Assertions.assertEquals(newName, updatedTeam.getName());

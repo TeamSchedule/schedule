@@ -3,9 +3,8 @@ package com.schedule.team.service.team;
 import com.schedule.team.model.entity.User;
 import com.schedule.team.model.entity.team.PublicTeam;
 
-import javax.transaction.Transactional;
+import java.time.LocalDate;
 
-public interface JoinTeamService {
-    @Transactional
-    void join(PublicTeam team, User user);
+public interface CreatePublicTeamService {
+    PublicTeam create(String name, LocalDate creationDate, User user);
 }

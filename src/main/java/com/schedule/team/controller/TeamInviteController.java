@@ -3,17 +3,17 @@ package com.schedule.team.controller;
 import com.schedule.team.model.GetTeamInviteCriteria;
 import com.schedule.team.model.TeamInviteStatus;
 import com.schedule.team.model.dto.TeamInviteDTO;
-import com.schedule.team.model.entity.Team;
 import com.schedule.team.model.entity.TeamInvite;
 import com.schedule.team.model.entity.User;
+import com.schedule.team.model.entity.team.PublicTeam;
 import com.schedule.team.model.request.CreateTeamInviteRequest;
 import com.schedule.team.model.request.UpdateTeamInviteRequest;
 import com.schedule.team.model.response.CreateTeamInviteResponse;
 import com.schedule.team.model.response.GetTeamInvitesResponse;
 import com.schedule.team.service.jwt.ExtractClaimsFromRequestService;
 import com.schedule.team.service.jwt.ExtractUserFromRequestService;
-import com.schedule.team.service.team.GetTeamByIdService;
 import com.schedule.team.service.team.JoinTeamService;
+import com.schedule.team.service.team.get.GetPublicTeamByIdService;
 import com.schedule.team.service.team_invite.*;
 import com.schedule.team.service.user.GetUserByIdService;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +31,6 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class TeamInviteController {
     private final ExtractClaimsFromRequestService extractClaimsFromRequestService;
-    private final GetTeamByIdService getTeamByIdService;
     private final ExtractUserFromRequestService extractUserFromRequestService;
     private final GetUserByIdService getUserByIdService;
     private final CreateTeamInviteService createTeamInviteService;
@@ -40,13 +39,14 @@ public class TeamInviteController {
     private final JoinTeamService joinTeamService;
     private final BuildTeamInviteDTOService buildTeamInviteDTOService;
     private final GetTeamInvitesService getTeamInvitesService;
+    private final GetPublicTeamByIdService getPublicTeamByIdService;
 
     @PostMapping
     public ResponseEntity<CreateTeamInviteResponse> create(
             @RequestBody CreateTeamInviteRequest createTeamInviteRequest,
             HttpServletRequest request
     ) {
-        Team team = getTeamByIdService.get(createTeamInviteRequest.getTeamId());
+        PublicTeam team = getPublicTeamByIdService.get(createTeamInviteRequest.getTeamId());
         User inviting = extractUserFromRequestService.extract(request);
 
         List<User> invitedList = createTeamInviteRequest
@@ -87,7 +87,7 @@ public class TeamInviteController {
         } else {
             teamInvites = getTeamInvitesService.get(userId, criteria, status);
         }
-        
+
         List<TeamInviteDTO> teamInviteDTOS = teamInvites
                 .stream()
                 .map(buildTeamInviteDTOService::build)

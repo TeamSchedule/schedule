@@ -1,7 +1,7 @@
 package com.schedule.team.service.team;
 
-import com.schedule.team.model.entity.Team;
 import com.schedule.team.model.entity.User;
+import com.schedule.team.model.entity.team.PublicTeam;
 import com.schedule.team.service.team_color.CreateTeamColorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,7 +15,7 @@ public class JoinTeamServiceImpl implements JoinTeamService {
 
     @Override
     @Transactional
-    public void join(Team team, User user) {
+    public void join(PublicTeam team, User user) {
         createTeamColorService.create(team, user);
     }
 }

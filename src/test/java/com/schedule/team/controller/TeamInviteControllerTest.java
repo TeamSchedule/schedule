@@ -5,17 +5,17 @@ import com.schedule.team.IntegrationTest;
 import com.schedule.team.model.GetTeamInviteCriteria;
 import com.schedule.team.model.TeamInviteStatus;
 import com.schedule.team.model.dto.TeamInviteDTO;
-import com.schedule.team.model.entity.Team;
 import com.schedule.team.model.entity.TeamInvite;
 import com.schedule.team.model.entity.User;
+import com.schedule.team.model.entity.team.PublicTeam;
 import com.schedule.team.model.request.CreateTeamInviteRequest;
 import com.schedule.team.model.request.UpdateTeamInviteRequest;
 import com.schedule.team.model.response.CreateTeamInviteResponse;
 import com.schedule.team.model.response.GetTeamInvitesResponse;
 import com.schedule.team.repository.TeamColorRepository;
 import com.schedule.team.repository.TeamInviteRepository;
-import com.schedule.team.repository.TeamRepository;
-import com.schedule.team.repository.UserRepository;
+import com.schedule.team.repository.team.TeamRepository;
+import com.schedule.team.service.user.CreateUserService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -38,10 +38,10 @@ public class TeamInviteControllerTest extends IntegrationTest {
     private final TeamInviteRepository teamInviteRepository;
     private final ObjectMapper objectMapper;
     private final TeamRepository teamRepository;
-    private final UserRepository userRepository;
     private final TeamColorRepository teamColorRepository;
     private final String tokenHeaderName;
     private final String tokenValue;
+    private final CreateUserService createUserService;
 
     @Autowired
     public TeamInviteControllerTest(
@@ -49,21 +49,21 @@ public class TeamInviteControllerTest extends IntegrationTest {
             TeamInviteRepository teamInviteRepository,
             ObjectMapper objectMapper,
             TeamRepository teamRepository,
-            UserRepository userRepository,
             TeamColorRepository teamColorRepository,
             @Value("${app.jwt.token.headerName}")
                     String tokenHeaderName,
             @Value("${app.jwt.token.test}")
-                    String tokenValue
+                    String tokenValue,
+            CreateUserService createUserService
     ) {
         this.mockMvc = mockMvc;
         this.teamInviteRepository = teamInviteRepository;
         this.objectMapper = objectMapper;
         this.teamRepository = teamRepository;
-        this.userRepository = userRepository;
         this.teamColorRepository = teamColorRepository;
         this.tokenHeaderName = tokenHeaderName;
         this.tokenValue = tokenValue;
+        this.createUserService = createUserService;
     }
 
     @AfterEach
@@ -73,12 +73,12 @@ public class TeamInviteControllerTest extends IntegrationTest {
 
     @Test
     void createTeamInviteTest() throws Exception {
-        User inviting = userRepository.save(new User(1L));
-        Team team = teamRepository.save(new Team(
+        User inviting = createUserService.create(1L);
+        PublicTeam team = teamRepository.save(new PublicTeam(
                 "team", LocalDate.now(), inviting
         ));
 
-        User invited = userRepository.save(new User(2L));
+        User invited = createUserService.create(2L);
         CreateTeamInviteRequest createTeamInviteRequest = new CreateTeamInviteRequest(
                 team.getId(),
                 List.of(invited.getId())
@@ -112,12 +112,12 @@ public class TeamInviteControllerTest extends IntegrationTest {
 
     @Test
     void updateTeamInviteAcceptedTest() throws Exception {
-        User inviting = userRepository.save(new User(1L));
-        Team team = teamRepository.save(new Team(
+        User inviting = createUserService.create(1L);
+        PublicTeam team = teamRepository.save(new PublicTeam(
                 "team", LocalDate.now(), inviting
         ));
 
-        User invited = userRepository.save(new User(2L));
+        User invited = createUserService.create(2L);
         TeamInvite teamInvite = teamInviteRepository.save(new TeamInvite(
                 team,
                 invited,
@@ -144,11 +144,11 @@ public class TeamInviteControllerTest extends IntegrationTest {
 
     @Test
     void getOpenTeamInvitesTest() throws Exception {
-        User inviting = userRepository.save(new User(1L));
-        User invited = userRepository.save(new User(2L));
+        User inviting = createUserService.create(1L);
+        User invited = createUserService.create(2L);
 
-        Team firstTeam = teamRepository.save(new Team("test", LocalDate.of(10, 10, 10), inviting));
-        Team secondTeam = teamRepository.save(new Team("test2", LocalDate.of(10, 10, 10), inviting));
+        PublicTeam firstTeam = teamRepository.save(new PublicTeam("test", LocalDate.of(10, 10, 10), inviting));
+        PublicTeam secondTeam = teamRepository.save(new PublicTeam("test2", LocalDate.of(10, 10, 10), inviting));
         TeamInvite firstTeamInvite = teamInviteRepository.save(new TeamInvite(
                 firstTeam, invited, inviting, LocalDateTime.now()
         ));
@@ -190,11 +190,11 @@ public class TeamInviteControllerTest extends IntegrationTest {
 
     @Test
     void getOpenTeamInviteFromTeamTest() throws Exception {
-        User invited = userRepository.save(new User(1L));
-        User inviting = userRepository.save(new User(2L));
+        User invited = createUserService.create(1L);
+        User inviting = createUserService.create(1L);
 
-        Team firstTeam = teamRepository.save(new Team("test", LocalDate.of(10, 10, 10), inviting));
-        Team secondTeam = teamRepository.save(new Team("test2", LocalDate.of(10, 10, 10), inviting));
+        PublicTeam firstTeam = teamRepository.save(new PublicTeam("test", LocalDate.of(10, 10, 10), inviting));
+        PublicTeam secondTeam = teamRepository.save(new PublicTeam("test2", LocalDate.of(10, 10, 10), inviting));
         TeamInvite firstTeamInvite = teamInviteRepository.save(new TeamInvite(
                 firstTeam, invited, inviting, LocalDateTime.now()
         ));

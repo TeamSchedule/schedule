@@ -1,5 +1,7 @@
 package com.schedule.team.model.entity;
 
+import com.schedule.team.model.entity.team.PublicTeam;
+import com.schedule.team.model.entity.team.Team;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,7 +21,7 @@ public class TeamColor {
     @ManyToOne
     @MapsId("teamId")
     @JoinColumn(name = "team_id")
-    private Team team;
+    private PublicTeam team;
 
     @ManyToOne
     @MapsId("userId")

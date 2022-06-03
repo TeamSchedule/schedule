@@ -1,8 +1,8 @@
 package com.schedule.team.service.team_color;
 
-import com.schedule.team.model.entity.Team;
 import com.schedule.team.model.entity.User;
+import com.schedule.team.model.entity.team.PublicTeam;
 
 public interface CreateTeamColorService {
-    void create(Team team, User user);
+    void create(PublicTeam team, User user);
 }
