@@ -2,13 +2,12 @@ package com.schedule.team.controller;
 
 import com.schedule.team.model.dto.TaskDTO;
 import com.schedule.team.model.entity.Task;
-import com.schedule.team.model.entity.team.Team;
 import com.schedule.team.model.entity.User;
+import com.schedule.team.model.entity.team.Team;
 import com.schedule.team.model.request.CreateTaskRequest;
 import com.schedule.team.model.request.PatchTaskRequest;
 import com.schedule.team.model.response.CreateTaskResponse;
 import com.schedule.team.model.response.GetTasksResponse;
-import com.schedule.team.service.jwt.ExtractClaimsFromRequestService;
 import com.schedule.team.service.jwt.ExtractUserFromRequestService;
 import com.schedule.team.service.task.*;
 import com.schedule.team.service.team.get.GetTeamByIdService;
@@ -28,7 +27,6 @@ import java.util.List;
 @RequestMapping("/task")
 @RequiredArgsConstructor
 public class TaskController {
-    private final ExtractClaimsFromRequestService extractClaimsFromRequestService;
     private final ExtractUserFromRequestService extractUserFromRequestService;
     private final GetUserByIdService getUserByIdService;
     private final CreateTaskService createTaskService;
@@ -81,8 +79,13 @@ public class TaskController {
             HttpServletRequest request,
             @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime from,
             @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime to,
-            @RequestParam("teams") List<Long> teamsIds
+            @RequestParam("teams") List<Long> teamsIds,
+            @RequestParam(value = "private", defaultValue = "false") boolean addPrivate
     ) {
+        User user = extractUserFromRequestService.extract(request);
+        if (addPrivate) {
+            teamsIds.add(user.getDefaultTeam().getId());
+        }
         List<Team> teams = getTeamsListByIdService.get(teamsIds);
 
         return ResponseEntity.ok().body(
@@ -91,7 +94,7 @@ public class TaskController {
                                 .getTasksInRange(
                                         from,
                                         to,
-                                        extractClaimsFromRequestService.extract(request).getId(),
+                                        user.getId(),
                                         teams
                                 )
                                 .stream()
