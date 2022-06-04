@@ -47,6 +47,7 @@ public class GetTasksInRangeTest extends IntegrationTest {
     private final BuildTaskDtoService buildTaskDtoService;
     private List<Task> tasks;
     private List<Long> teamsIds;
+    private Long privateTaskId;
 
     @Autowired
     public GetTasksInRangeTest(
@@ -106,8 +107,87 @@ public class GetTasksInRangeTest extends IntegrationTest {
             );
             tasks.add(task);
         }
+        Task privateTask = taskRepository.save(
+                new Task(
+                        taskName,
+                        author,
+                        author,
+                        author.getDefaultTeam(),
+                        taskDescription,
+                        creationTime,
+                        startExpirationTime
+                )
+        );
+        this.privateTaskId = privateTask.getId();
+        tasks.add(privateTask);
         this.tasks = tasks;
         this.teamsIds = List.of(team.getId());
+    }
+
+    @Test
+    void getPrivateTaskTest() throws Exception {
+        String from = startExpirationTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        String to = endExpirationTIme.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        String teams = "";
+
+        String response = mockMvc
+                .perform(
+                        get("/task/")
+                                .queryParam("from", from)
+                                .queryParam("to", to)
+                                .queryParam("teams", teams)
+                                .queryParam("private", Boolean.TRUE.toString())
+                                .header(tokenHeaderName, tokenValue)
+                )
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        GetTasksResponse getTasksResponse = objectMapper.readValue(response, GetTasksResponse.class);
+        List<TaskDTO> expectedTasksDTOs = tasks
+                .stream()
+                .filter(task -> task.getId().equals(privateTaskId))
+                .map(buildTaskDtoService::build)
+                .toList();
+        Assertions.assertTrue(
+                expectedTasksDTOs.size() == getTasksResponse.getTasks().size()
+                        && expectedTasksDTOs.containsAll(getTasksResponse.getTasks())
+                        && getTasksResponse.getTasks().containsAll(expectedTasksDTOs)
+        );
+    }
+
+    @Test
+    void getAllTasksExcludePrivateTest() throws Exception {
+        String from = startExpirationTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        String to = endExpirationTIme.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        String teams = teamsIds.stream().map(String::valueOf).collect(Collectors.joining(","));
+
+        String response = mockMvc
+                .perform(
+                        get("/task/")
+                                .queryParam("from", from)
+                                .queryParam("to", to)
+                                .queryParam("teams", teams)
+                                .queryParam("private", Boolean.FALSE.toString())
+                                .header(tokenHeaderName, tokenValue)
+                )
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        GetTasksResponse getTasksResponse = objectMapper.readValue(response, GetTasksResponse.class);
+        List<TaskDTO> expectedTasksDTOs = tasks
+                .stream()
+                .filter(task -> !task.getId().equals(privateTaskId))
+                .map(buildTaskDtoService::build)
+                .toList();
+        Assertions.assertTrue(
+                expectedTasksDTOs.size() == getTasksResponse.getTasks().size()
+                        && expectedTasksDTOs.containsAll(getTasksResponse.getTasks())
+                        && getTasksResponse.getTasks().containsAll(expectedTasksDTOs)
+        );
     }
 
     @Test
@@ -122,6 +202,7 @@ public class GetTasksInRangeTest extends IntegrationTest {
                                 .queryParam("from", from)
                                 .queryParam("to", to)
                                 .queryParam("teams", teams)
+                                .queryParam("private", Boolean.TRUE.toString())
                                 .header(tokenHeaderName, tokenValue)
                 )
                 .andExpect(status().isOk())
@@ -151,6 +232,7 @@ public class GetTasksInRangeTest extends IntegrationTest {
                                 .queryParam("from", from)
                                 .queryParam("to", to)
                                 .queryParam("teams", teams)
+                                .queryParam("private", Boolean.TRUE.toString())
                                 .header(tokenHeaderName, tokenValue)
                 )
                 .andExpect(status().isOk())
@@ -184,6 +266,7 @@ public class GetTasksInRangeTest extends IntegrationTest {
                                 .queryParam("from", from)
                                 .queryParam("to", to)
                                 .queryParam("teams", teams)
+                                .queryParam("private", Boolean.TRUE.toString())
                                 .header(tokenHeaderName, tokenValue)
                 )
                 .andExpect(status().isOk())
