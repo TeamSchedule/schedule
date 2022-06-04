@@ -15,6 +15,7 @@ public class BuildTaskDtoServiceImpl implements BuildTaskDtoService {
                 task.getName(),
                 task.getAuthor().getId(),
                 task.getAssignee().getId(),
+                // TODO: don't send team short description for private task
                 new TeamShortDescriptionDTO(
                         task.getTeam().getId(),
                         task.getTeam() instanceof PublicTeam ? ((PublicTeam) task.getTeam()).getName() : null
