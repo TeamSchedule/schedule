@@ -7,6 +7,6 @@ public class StringToTeamInviteStatusConverter
         implements Converter<String, TeamInviteStatus> {
     @Override
     public TeamInviteStatus convert(String source) {
-        return TeamInviteStatus.valueOf(source.toLowerCase());
+        return TeamInviteStatus.decode(source);
     }
 }
