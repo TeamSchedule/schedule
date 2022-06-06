@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 
 @Repository
@@ -26,4 +27,6 @@ public interface TeamColorRepository extends CrudRepository<TeamColor, TeamColor
     void deleteByTeamAndUser(Team team, User user);
 
     boolean existsByTeamAndUser(Team team, User user);
+
+    boolean existsByTeamColorKeyIn(Collection<TeamColorKey> teamColorKey);
 }
