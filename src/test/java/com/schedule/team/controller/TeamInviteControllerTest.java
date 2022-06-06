@@ -11,10 +11,13 @@ import com.schedule.team.model.entity.team.PublicTeam;
 import com.schedule.team.model.request.CreateTeamInviteRequest;
 import com.schedule.team.model.request.UpdateTeamInviteRequest;
 import com.schedule.team.model.response.CreateTeamInviteResponse;
+import com.schedule.team.model.response.DefaultErrorResponse;
 import com.schedule.team.model.response.GetTeamInvitesResponse;
 import com.schedule.team.repository.TeamColorRepository;
 import com.schedule.team.repository.TeamInviteRepository;
 import com.schedule.team.repository.team.TeamRepository;
+import com.schedule.team.service.team.JoinTeamService;
+import com.schedule.team.service.team_invite.CreateTeamInviteService;
 import com.schedule.team.service.user.CreateUserService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -42,6 +45,8 @@ public class TeamInviteControllerTest extends IntegrationTest {
     private final String tokenHeaderName;
     private final String tokenValue;
     private final CreateUserService createUserService;
+    private final JoinTeamService joinTeamService;
+    private final CreateTeamInviteService createTeamInviteService;
 
     @Autowired
     public TeamInviteControllerTest(
@@ -54,7 +59,9 @@ public class TeamInviteControllerTest extends IntegrationTest {
                     String tokenHeaderName,
             @Value("${app.jwt.token.test}")
                     String tokenValue,
-            CreateUserService createUserService
+            CreateUserService createUserService,
+            JoinTeamService joinTeamService,
+            CreateTeamInviteService createTeamInviteService
     ) {
         this.mockMvc = mockMvc;
         this.teamInviteRepository = teamInviteRepository;
@@ -64,6 +71,8 @@ public class TeamInviteControllerTest extends IntegrationTest {
         this.tokenHeaderName = tokenHeaderName;
         this.tokenValue = tokenValue;
         this.createUserService = createUserService;
+        this.joinTeamService = joinTeamService;
+        this.createTeamInviteService = createTeamInviteService;
     }
 
     @AfterEach
@@ -225,5 +234,87 @@ public class TeamInviteControllerTest extends IntegrationTest {
         Assertions.assertEquals(TeamInviteStatus.OPEN, firstTeamInviteDTO.getInviteStatus());
         Assertions.assertEquals(invited.getId(), firstTeamInviteDTO.getInvitedId());
         Assertions.assertEquals(inviting.getId(), firstTeamInviteDTO.getInvitingId());
+    }
+
+    @Test
+    void createTeamInviteBadRequestUserIsAlreadyAMemberTest() throws Exception {
+        User inviting = createUserService.create(1L);
+        PublicTeam team = teamRepository.save(new PublicTeam(
+                "team", LocalDate.now(), inviting
+        ));
+
+        User invited = createUserService.create(2L);
+        joinTeamService.join(team, invited);
+
+        CreateTeamInviteRequest createTeamInviteRequest = new CreateTeamInviteRequest(
+                team.getId(),
+                List.of(invited.getId())
+        );
+        String requestBody = objectMapper.writeValueAsString(createTeamInviteRequest);
+
+        String response = mockMvc
+                .perform(
+                        post("/team/invite")
+                                .contentType(APPLICATION_JSON)
+                                .content(requestBody)
+                                .header(tokenHeaderName, tokenValue)
+                )
+                .andExpect(status().isBadRequest())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        DefaultErrorResponse defaultErrorResponse = objectMapper.readValue(
+                response,
+                DefaultErrorResponse.class
+        );
+
+        Assertions.assertEquals(1, defaultErrorResponse.getErrors().size());
+        Assertions.assertEquals(
+                "User is already a team member",
+                defaultErrorResponse.getErrors().get(0)
+        );
+    }
+
+    @Test
+    void createTeamInviteBadRequestUserIsAlreadyInvitedTest() throws Exception {
+        User inviting = createUserService.create(1L);
+        PublicTeam team = teamRepository.save(new PublicTeam(
+                "team", LocalDate.now(), inviting
+        ));
+
+        User invited = createUserService.create(2L);
+        createTeamInviteService.create(
+                team, inviting, invited, LocalDateTime.now()
+        );
+
+        CreateTeamInviteRequest createTeamInviteRequest = new CreateTeamInviteRequest(
+                team.getId(),
+                List.of(invited.getId())
+        );
+        String requestBody = objectMapper.writeValueAsString(createTeamInviteRequest);
+
+        String response = mockMvc
+                .perform(
+                        post("/team/invite")
+                                .contentType(APPLICATION_JSON)
+                                .content(requestBody)
+                                .header(tokenHeaderName, tokenValue)
+                )
+                .andExpect(status().isBadRequest())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        DefaultErrorResponse defaultErrorResponse = objectMapper.readValue(
+                response,
+                DefaultErrorResponse.class
+        );
+
+        Assertions.assertEquals(1, defaultErrorResponse.getErrors().size());
+        Assertions.assertEquals(
+                "User is already invited to this team",
+                defaultErrorResponse.getErrors().get(0)
+        );
     }
 }

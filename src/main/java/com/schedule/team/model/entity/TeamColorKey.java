@@ -20,4 +20,15 @@ public class TeamColorKey implements Serializable {
 
     @Column(name = "user_id")
     private Long userId;
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj instanceof TeamColorKey teamColorKey)) {
+            return false;
+        }
+        return teamId.equals(teamColorKey.getTeamId()) && userId.equals(teamColorKey.getUserId());
+    }
 }
