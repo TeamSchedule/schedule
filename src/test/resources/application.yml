@@ -3,7 +3,7 @@ spring:
     pathmatch:
       matching-strategy: ant-path-matcher
   datasource:
-    url: jdbc:tc:postgresql:13.6:///test_database
+    url: jdbc:tc:postgresql:14.2-alpine:///test_database
     username: user
     password: password
   flyway:
