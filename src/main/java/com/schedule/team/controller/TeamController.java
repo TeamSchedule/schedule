@@ -14,18 +14,16 @@ import com.schedule.team.model.response.GetTeamByIdResponse;
 import com.schedule.team.model.response.GetTeamsResponse;
 import com.schedule.team.service.jwt.ExtractClaimsFromRequestService;
 import com.schedule.team.service.jwt.ExtractUserFromRequestService;
-import com.schedule.team.service.team.BuildTeamDescriptionDTOService;
-import com.schedule.team.service.team.CreatePublicTeamService;
-import com.schedule.team.service.team.LeaveTeamService;
-import com.schedule.team.service.team.UpdateTeamService;
-import com.schedule.team.service.team.get.GetPublicTeamByIdService;
+import com.schedule.team.service.team.community.*;
 import com.schedule.team.service.team_color.GetTeamColorByUserIdAndTeamIdService;
 import com.schedule.team.service.team_color.GetTeamColorsByUserIdService;
 import com.schedule.team.service.team_color.UpdateTeamColorService;
 import com.schedule.team.service.user.CreateUserService;
+import com.schedule.team.validation.constraint.PublicTeamExistsByIdConstraint;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -33,6 +31,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @RestController
+@Validated
 @RequestMapping("/team")
 @RequiredArgsConstructor
 public class TeamController {
@@ -76,10 +75,10 @@ public class TeamController {
 
     @GetMapping("/{teamId}")
     public ResponseEntity<GetTeamByIdResponse> get(
-            @PathVariable Long teamId,
+            @PublicTeamExistsByIdConstraint @PathVariable Long teamId,
             HttpServletRequest request
     ) {
-        Long userId = extractUserFromRequestService.extract(request).getId();
+        Long userId = extractClaimsFromRequestService.extract(request).getId();
         TeamColor teamColor = getTeamColorByUserIdAndTeamIdService.get(userId, teamId);
         PublicTeam team = teamColor.getTeam();
 
@@ -116,7 +115,7 @@ public class TeamController {
 
     @DeleteMapping("/{teamId}/user")
     public ResponseEntity<?> leave(
-            @PathVariable Long teamId,
+            @PublicTeamExistsByIdConstraint @PathVariable Long teamId,
             HttpServletRequest request
     ) {
         leaveTeamService.leave(
@@ -129,7 +128,7 @@ public class TeamController {
     // TODO: security checks
     @PatchMapping("/{teamId}")
     public ResponseEntity<?> patch(
-            @PathVariable Long teamId,
+            @PublicTeamExistsByIdConstraint @PathVariable Long teamId,
             @RequestBody UpdateTeamRequest updateTeamRequest,
             HttpServletRequest request
     ) {

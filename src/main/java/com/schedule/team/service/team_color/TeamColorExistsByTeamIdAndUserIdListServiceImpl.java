@@ -9,18 +9,18 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class TeamColorExistsServiceImpl implements TeamColorExistsService {
+public class TeamColorExistsByTeamIdAndUserIdListServiceImpl implements TeamColorExistsByTeamIdAndUserIdListService {
     private final TeamColorRepository teamColorRepository;
 
     @Override
     public boolean exists(
             Long teamId,
-            List<Long> invitedIds
+            List<Long> userIds
     ) {
-        List<TeamColorKey> teamColorKeys = invitedIds
+        List<TeamColorKey> teamColorKeys = userIds
                 .stream()
                 .map(
-                        invitedId -> new TeamColorKey(teamId, invitedId)
+                        userId -> new TeamColorKey(teamId, userId)
                 )
                 .toList();
         return teamColorRepository.existsByTeamColorKeyIn(teamColorKeys);

@@ -16,7 +16,7 @@ import com.schedule.team.model.response.GetTeamInvitesResponse;
 import com.schedule.team.repository.TeamColorRepository;
 import com.schedule.team.repository.TeamInviteRepository;
 import com.schedule.team.repository.team.TeamRepository;
-import com.schedule.team.service.team.JoinTeamService;
+import com.schedule.team.service.team.community.JoinTeamService;
 import com.schedule.team.service.team_invite.CreateTeamInviteService;
 import com.schedule.team.service.user.CreateUserService;
 import org.junit.jupiter.api.AfterEach;

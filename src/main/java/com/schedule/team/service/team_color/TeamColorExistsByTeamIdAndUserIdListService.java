@@ -2,9 +2,9 @@ package com.schedule.team.service.team_color;
 
 import java.util.List;
 
-public interface TeamColorExistsService {
+public interface TeamColorExistsByTeamIdAndUserIdListService {
     boolean exists(
             Long teamId,
-            List<Long> invitedIds
+            List<Long> userIds
     );
 }

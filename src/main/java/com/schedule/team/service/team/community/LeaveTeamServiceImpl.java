@@ -1,7 +1,6 @@
-package com.schedule.team.service.team;
+package com.schedule.team.service.team.community;
 
 import com.schedule.team.model.entity.team.PublicTeam;
-import com.schedule.team.model.entity.team.Team;
 import com.schedule.team.model.entity.User;
 import com.schedule.team.repository.TeamColorRepository;
 import lombok.RequiredArgsConstructor;
