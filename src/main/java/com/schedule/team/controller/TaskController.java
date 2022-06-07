@@ -8,7 +8,7 @@ import com.schedule.team.model.request.CreateTaskRequest;
 import com.schedule.team.model.request.PatchTaskRequest;
 import com.schedule.team.model.response.CreateTaskResponse;
 import com.schedule.team.model.response.GetTasksResponse;
-import com.schedule.team.service.jwt.ExtractUserFromRequestService;
+import com.schedule.team.service.jwt.ExtractClaimsFromRequestService;
 import com.schedule.team.service.task.*;
 import com.schedule.team.service.team.get.GetTeamByIdService;
 import com.schedule.team.service.team.get.GetTeamsListByIdService;
@@ -27,7 +27,7 @@ import java.util.List;
 @RequestMapping("/task")
 @RequiredArgsConstructor
 public class TaskController {
-    private final ExtractUserFromRequestService extractUserFromRequestService;
+    private final ExtractClaimsFromRequestService extractClaimsFromRequestService;
     private final GetUserByIdService getUserByIdService;
     private final CreateTaskService createTaskService;
     private final GetTeamByIdService getTeamByIdService;
@@ -43,7 +43,7 @@ public class TaskController {
             @RequestBody CreateTaskRequest createTaskRequest,
             HttpServletRequest request
     ) {
-        User creator = extractUserFromRequestService.extract(request);
+        User creator = extractClaimsFromRequestService.extractUser(request);
         User assignee = getUserByIdService.get(createTaskRequest.getAssigneeId());
         Team team = getTeamByIdService.get(createTaskRequest.getTeamId().orElse(creator.getDefaultTeam().getId()));
 
@@ -82,7 +82,7 @@ public class TaskController {
             @RequestParam("teams") List<Long> teamsIds,
             @RequestParam(value = "private", defaultValue = "false") boolean addPrivate
     ) {
-        User user = extractUserFromRequestService.extract(request);
+        User user = extractClaimsFromRequestService.extractUser(request);
         if (addPrivate) {
             teamsIds.add(user.getDefaultTeam().getId());
         }

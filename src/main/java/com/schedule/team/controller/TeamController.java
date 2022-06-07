@@ -13,7 +13,6 @@ import com.schedule.team.model.response.CreateTeamResponse;
 import com.schedule.team.model.response.GetTeamByIdResponse;
 import com.schedule.team.model.response.GetTeamsResponse;
 import com.schedule.team.service.jwt.ExtractClaimsFromRequestService;
-import com.schedule.team.service.jwt.ExtractUserFromRequestService;
 import com.schedule.team.service.team.community.*;
 import com.schedule.team.service.team_color.GetTeamColorByUserIdAndTeamIdService;
 import com.schedule.team.service.team_color.GetTeamColorsByUserIdService;
@@ -38,7 +37,6 @@ public class TeamController {
     private final ExtractClaimsFromRequestService extractClaimsFromRequestService;
     private final GetTeamColorsByUserIdService getTeamColorsByUserIdService;
     private final GetTeamColorByUserIdAndTeamIdService getTeamColorByUserIdAndTeamIdService;
-    private final ExtractUserFromRequestService extractUserFromRequestService;
     private final CreatePublicTeamService createPublicTeamService;
     private final LeaveTeamService leaveTeamService;
     private final UpdateTeamService updateTeamService;
@@ -60,7 +58,7 @@ public class TeamController {
             @RequestBody CreateTeamRequest createTeamRequest,
             HttpServletRequest request
     ) {
-        User creator = extractUserFromRequestService.extract(request);
+        User creator = extractClaimsFromRequestService.extractUser(request);
         Team team = createPublicTeamService.create(
                 createTeamRequest.getName(),
                 LocalDate.now(),
@@ -78,7 +76,7 @@ public class TeamController {
             @PublicTeamExistsByIdConstraint @PathVariable Long teamId,
             HttpServletRequest request
     ) {
-        Long userId = extractClaimsFromRequestService.extract(request).getId();
+        Long userId = extractClaimsFromRequestService.extractClaims(request).getId();
         TeamColor teamColor = getTeamColorByUserIdAndTeamIdService.get(userId, teamId);
         PublicTeam team = teamColor.getTeam();
 
@@ -98,7 +96,7 @@ public class TeamController {
 
     @GetMapping
     public ResponseEntity<GetTeamsResponse> get(HttpServletRequest request) {
-        Long userId = extractClaimsFromRequestService.extract(request).getId();
+        Long userId = extractClaimsFromRequestService.extractClaims(request).getId();
         List<TeamDescriptionDTO> teamDescriptionDTOS = getTeamColorsByUserIdService
                 .get(userId)
                 .stream()
@@ -120,7 +118,7 @@ public class TeamController {
     ) {
         leaveTeamService.leave(
                 getPublicTeamByIdService.get(teamId),
-                extractUserFromRequestService.extract(request)
+                extractClaimsFromRequestService.extractUser(request)
         );
         return ResponseEntity.noContent().build();
     }
@@ -139,7 +137,7 @@ public class TeamController {
         }
 
         if (updateTeamRequest.getColor() != null) {
-            Long userId = extractClaimsFromRequestService.extract(request).getId();
+            Long userId = extractClaimsFromRequestService.extractClaims(request).getId();
             updateTeamColorService.update(teamId, userId, updateTeamRequest.getColor());
         }
 

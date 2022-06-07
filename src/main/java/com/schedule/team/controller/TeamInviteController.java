@@ -11,7 +11,6 @@ import com.schedule.team.model.request.UpdateTeamInviteRequest;
 import com.schedule.team.model.response.CreateTeamInviteResponse;
 import com.schedule.team.model.response.GetTeamInvitesResponse;
 import com.schedule.team.service.jwt.ExtractClaimsFromRequestService;
-import com.schedule.team.service.jwt.ExtractUserFromRequestService;
 import com.schedule.team.service.team.community.JoinTeamService;
 import com.schedule.team.service.team.community.GetPublicTeamByIdService;
 import com.schedule.team.service.team_invite.*;
@@ -32,7 +31,6 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class TeamInviteController {
     private final ExtractClaimsFromRequestService extractClaimsFromRequestService;
-    private final ExtractUserFromRequestService extractUserFromRequestService;
     private final GetUserByIdService getUserByIdService;
     private final CreateTeamInviteService createTeamInviteService;
     private final GetTeamInviteByIdService getTeamInviteByIdService;
@@ -48,7 +46,7 @@ public class TeamInviteController {
             HttpServletRequest request
     ) {
         PublicTeam team = getPublicTeamByIdService.get(createTeamInviteRequest.getTeamId());
-        User inviting = extractUserFromRequestService.extract(request);
+        User inviting = extractClaimsFromRequestService.extractUser(request);
 
         List<User> invitedList = createTeamInviteRequest
                 .getInvitedIds()
@@ -81,7 +79,7 @@ public class TeamInviteController {
             @RequestParam(name = "teamId", required = false) Optional<Long> teamId,
             HttpServletRequest request
     ) {
-        Long userId = extractClaimsFromRequestService.extract(request).getId();
+        Long userId = extractClaimsFromRequestService.extractClaims(request).getId();
         List<TeamInvite> teamInvites;
         if (teamId.isPresent()) {
             teamInvites = getTeamInvitesService.get(userId, criteria, status, teamId.get());

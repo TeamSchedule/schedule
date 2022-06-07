@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import javax.servlet.http.HttpServletRequest;
 
 @Service
-public class ExtractTokenServiceImpl implements ExtractTokenService {
+class ExtractTokenServiceImpl implements ExtractTokenService {
     @Value("${app.jwt.token.headerName}")
     private String tokenHeaderName;
     @Value("${app.jwt.token.prefix}")
