@@ -1,4 +1,4 @@
-package com.schedule.team.service.team;
+package com.schedule.team.service.team.community;
 
 import com.schedule.team.model.entity.User;
 import com.schedule.team.model.entity.team.PublicTeam;
@@ -10,7 +10,7 @@ import java.time.LocalDate;
 
 @Service
 @RequiredArgsConstructor
-public class CreatePublicPublicTeamServiceImpl implements CreatePublicTeamService {
+public class CreatePublicTeamServiceImpl implements CreatePublicTeamService {
     private final TeamRepository teamRepository;
     private final JoinTeamService joinTeamService;
 

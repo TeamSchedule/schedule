@@ -12,13 +12,14 @@ import com.schedule.team.model.request.CreateDefaultTeamRequest;
 import com.schedule.team.model.request.CreateTeamRequest;
 import com.schedule.team.model.request.UpdateTeamRequest;
 import com.schedule.team.model.response.CreateTeamResponse;
+import com.schedule.team.model.response.DefaultErrorResponse;
 import com.schedule.team.model.response.GetTeamByIdResponse;
 import com.schedule.team.model.response.GetTeamsResponse;
 import com.schedule.team.repository.TeamColorRepository;
 import com.schedule.team.repository.UserRepository;
 import com.schedule.team.repository.team.PublicTeamRepository;
 import com.schedule.team.repository.team.TeamRepository;
-import com.schedule.team.service.team.JoinTeamService;
+import com.schedule.team.service.team.community.JoinTeamService;
 import com.schedule.team.service.user.CreateUserService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -229,7 +230,7 @@ public class TeamControllerTest extends IntegrationTest {
     }
 
     @Test
-    void patchTeamTest() throws Exception {
+    void updateTeamTest() throws Exception {
         User admin = createUserService.create(1L);
 
         String teamName = "test";
@@ -256,5 +257,84 @@ public class TeamControllerTest extends IntegrationTest {
 
         Assertions.assertEquals(newName, updatedTeam.getName());
         Assertions.assertEquals(newColor, updatedTeamColor.getColor());
+    }
+
+    @Test
+    void getTeamBadRequestTeamNotFoundTest() throws Exception {
+        String response = mockMvc
+                .perform(
+                        get("/team/1")
+                                .header(tokenHeaderName, tokenValue)
+                )
+                .andExpect(status().isBadRequest())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        DefaultErrorResponse defaultErrorResponse = objectMapper.readValue(
+                response,
+                DefaultErrorResponse.class
+        );
+
+        Assertions.assertEquals(1, defaultErrorResponse.getErrors().size());
+        Assertions.assertEquals(
+                "Team with specified id is not present",
+                defaultErrorResponse.getErrors().get(0)
+        );
+    }
+
+    @Test
+    void updateTeamBadRequestTeamNotFoundTest() throws Exception {
+        String newName = "new name";
+        String newColor = "new color";
+        UpdateTeamRequest updateTeamRequest = new UpdateTeamRequest(newName, newColor);
+        String requestBody = objectMapper.writeValueAsString(updateTeamRequest);
+
+        String response = mockMvc
+                .perform(
+                        patch("/team/1")
+                                .header(tokenHeaderName, tokenValue)
+                                .contentType(APPLICATION_JSON)
+                                .content(requestBody)
+                )
+                .andExpect(status().isBadRequest())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        DefaultErrorResponse defaultErrorResponse = objectMapper.readValue(
+                response,
+                DefaultErrorResponse.class
+        );
+
+        Assertions.assertEquals(1, defaultErrorResponse.getErrors().size());
+        Assertions.assertEquals(
+                "Team with specified id is not present",
+                defaultErrorResponse.getErrors().get(0)
+        );
+    }
+
+    @Test
+    void leaveTeamBadRequestTeamNotFoundTest() throws Exception {
+        String response = mockMvc
+                .perform(
+                        delete("/team/1/user")
+                                .header(tokenHeaderName, tokenValue)
+                )
+                .andExpect(status().isBadRequest())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        DefaultErrorResponse defaultErrorResponse = objectMapper.readValue(
+                response,
+                DefaultErrorResponse.class
+        );
+
+        Assertions.assertEquals(1, defaultErrorResponse.getErrors().size());
+        Assertions.assertEquals(
+                "Team with specified id is not present",
+                defaultErrorResponse.getErrors().get(0)
+        );
     }
 }

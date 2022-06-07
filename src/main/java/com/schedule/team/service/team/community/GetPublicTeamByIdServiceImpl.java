@@ -1,4 +1,4 @@
-package com.schedule.team.service.team.get;
+package com.schedule.team.service.team.community;
 
 import com.schedule.team.model.entity.team.PublicTeam;
 import com.schedule.team.repository.team.PublicTeamRepository;
