@@ -32,13 +32,10 @@ import java.util.Optional;
 public class TeamInviteController {
     private final ExtractClaimsFromRequestService extractClaimsFromRequestService;
     private final GetUserByIdService getUserByIdService;
-    private final CreateTeamInviteService createTeamInviteService;
-    private final GetTeamInviteByIdService getTeamInviteByIdService;
-    private final UpdateTeamInviteService updateTeamInviteService;
     private final JoinTeamService joinTeamService;
     private final BuildTeamInviteDTOService buildTeamInviteDTOService;
-    private final GetTeamInvitesService getTeamInvitesService;
     private final GetPublicTeamByIdService getPublicTeamByIdService;
+    private final TeamInviteService teamInviteService;
 
     @PostMapping
     public ResponseEntity<CreateTeamInviteResponse> create(
@@ -56,7 +53,7 @@ public class TeamInviteController {
         List<Long> ids = invitedList
                 .stream()
                 .map(
-                        invited -> createTeamInviteService.create(
+                        invited -> teamInviteService.create(
                                 team,
                                 inviting,
                                 invited,
@@ -82,9 +79,9 @@ public class TeamInviteController {
         Long userId = extractClaimsFromRequestService.extractClaims(request).getId();
         List<TeamInvite> teamInvites;
         if (teamId.isPresent()) {
-            teamInvites = getTeamInvitesService.get(userId, criteria, status, teamId.get());
+            teamInvites = teamInviteService.get(userId, criteria, status, teamId.get());
         } else {
-            teamInvites = getTeamInvitesService.get(userId, criteria, status);
+            teamInvites = teamInviteService.get(userId, criteria, status);
         }
 
         List<TeamInviteDTO> teamInviteDTOS = teamInvites
@@ -103,9 +100,9 @@ public class TeamInviteController {
             @RequestBody UpdateTeamInviteRequest updateTeamInviteRequest,
             @PathVariable Long teamInviteId
     ) {
-        TeamInvite teamInvite = getTeamInviteByIdService.get(teamInviteId);
+        TeamInvite teamInvite = teamInviteService.getById(teamInviteId);
         // TODO: check if invited or inviting
-        updateTeamInviteService.patch(
+        teamInviteService.update(
                 teamInvite,
                 updateTeamInviteRequest.getStatus()
         );

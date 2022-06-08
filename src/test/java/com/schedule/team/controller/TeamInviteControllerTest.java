@@ -17,7 +17,7 @@ import com.schedule.team.repository.TeamColorRepository;
 import com.schedule.team.repository.TeamInviteRepository;
 import com.schedule.team.repository.team.TeamRepository;
 import com.schedule.team.service.team.community.JoinTeamService;
-import com.schedule.team.service.team_invite.CreateTeamInviteService;
+import com.schedule.team.service.team_invite.TeamInviteService;
 import com.schedule.team.service.user.CreateUserService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -46,7 +46,7 @@ public class TeamInviteControllerTest extends IntegrationTest {
     private final String tokenValue;
     private final CreateUserService createUserService;
     private final JoinTeamService joinTeamService;
-    private final CreateTeamInviteService createTeamInviteService;
+    private final TeamInviteService teamInviteService;
 
     @Autowired
     public TeamInviteControllerTest(
@@ -61,7 +61,7 @@ public class TeamInviteControllerTest extends IntegrationTest {
                     String tokenValue,
             CreateUserService createUserService,
             JoinTeamService joinTeamService,
-            CreateTeamInviteService createTeamInviteService
+            TeamInviteService teamInviteService
     ) {
         this.mockMvc = mockMvc;
         this.teamInviteRepository = teamInviteRepository;
@@ -72,7 +72,7 @@ public class TeamInviteControllerTest extends IntegrationTest {
         this.tokenValue = tokenValue;
         this.createUserService = createUserService;
         this.joinTeamService = joinTeamService;
-        this.createTeamInviteService = createTeamInviteService;
+        this.teamInviteService = teamInviteService;
     }
 
     @AfterEach
@@ -284,7 +284,7 @@ public class TeamInviteControllerTest extends IntegrationTest {
         ));
 
         User invited = createUserService.create(2L);
-        createTeamInviteService.create(
+        teamInviteService.create(
                 team, inviting, invited, LocalDateTime.now()
         );
 
