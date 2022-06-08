@@ -11,7 +11,7 @@ import com.schedule.team.model.request.PatchTaskRequest;
 import com.schedule.team.model.response.CreateTaskResponse;
 import com.schedule.team.repository.TaskRepository;
 import com.schedule.team.repository.team.TeamRepository;
-import com.schedule.team.service.team.CreateDefaultTeamService;
+import com.schedule.team.service.team.DefaultTeamService;
 import com.schedule.team.service.user.UserService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -38,7 +38,7 @@ public class TaskControllerTest extends IntegrationTest {
     private final String tokenHeaderName;
     private final String tokenValue;
     private final UserService userService;
-    private final CreateDefaultTeamService createDefaultTeamService;
+    private final DefaultTeamService createDefaultTeamService;
 
     @Autowired
     public TaskControllerTest(
@@ -51,7 +51,7 @@ public class TaskControllerTest extends IntegrationTest {
                     String tokenHeaderName,
             @Value("${app.jwt.token.test}")
                     String tokenValue,
-            CreateDefaultTeamService createDefaultTeamService
+            DefaultTeamService defaultTeamService
     ) {
         this.mockMvc = mockMvc;
         this.taskRepository = taskRepository;
@@ -60,7 +60,7 @@ public class TaskControllerTest extends IntegrationTest {
         this.objectMapper = objectMapper;
         this.tokenHeaderName = tokenHeaderName;
         this.tokenValue = tokenValue;
-        this.createDefaultTeamService = createDefaultTeamService;
+        this.createDefaultTeamService = defaultTeamService;
     }
 
     @AfterEach

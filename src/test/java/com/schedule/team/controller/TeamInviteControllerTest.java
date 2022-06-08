@@ -16,8 +16,8 @@ import com.schedule.team.model.response.GetTeamInvitesResponse;
 import com.schedule.team.repository.TeamColorRepository;
 import com.schedule.team.repository.TeamInviteRepository;
 import com.schedule.team.repository.team.TeamRepository;
-import com.schedule.team.service.team.CreateDefaultTeamService;
-import com.schedule.team.service.team.community.JoinTeamService;
+import com.schedule.team.service.team.DefaultTeamService;
+import com.schedule.team.service.team.PublicTeamService;
 import com.schedule.team.service.team_invite.TeamInviteService;
 import com.schedule.team.service.user.UserService;
 import org.junit.jupiter.api.AfterEach;
@@ -45,10 +45,10 @@ public class TeamInviteControllerTest extends IntegrationTest {
     private final TeamColorRepository teamColorRepository;
     private final String tokenHeaderName;
     private final String tokenValue;
-    private final JoinTeamService joinTeamService;
     private final TeamInviteService teamInviteService;
     private final UserService userService;
-    private final CreateDefaultTeamService createDefaultTeamService;
+    private final DefaultTeamService createDefaultTeamService;
+    private final PublicTeamService publicTeamService;
 
     @Autowired
     public TeamInviteControllerTest(
@@ -61,10 +61,10 @@ public class TeamInviteControllerTest extends IntegrationTest {
                     String tokenHeaderName,
             @Value("${app.jwt.token.test}")
                     String tokenValue,
-            JoinTeamService joinTeamService,
             TeamInviteService teamInviteService,
             UserService userService,
-            CreateDefaultTeamService createDefaultTeamService
+            DefaultTeamService defaultTeamService,
+            PublicTeamService publicTeamService
     ) {
         this.mockMvc = mockMvc;
         this.teamInviteRepository = teamInviteRepository;
@@ -74,9 +74,9 @@ public class TeamInviteControllerTest extends IntegrationTest {
         this.tokenHeaderName = tokenHeaderName;
         this.tokenValue = tokenValue;
         this.userService = userService;
-        this.joinTeamService = joinTeamService;
         this.teamInviteService = teamInviteService;
-        this.createDefaultTeamService = createDefaultTeamService;
+        this.createDefaultTeamService = defaultTeamService;
+        this.publicTeamService = publicTeamService;
     }
 
     @AfterEach
@@ -248,7 +248,7 @@ public class TeamInviteControllerTest extends IntegrationTest {
         ));
 
         User invited = userService.create(2L, createDefaultTeamService.create());
-        joinTeamService.join(team, invited);
+        publicTeamService.join(team, invited);
 
         CreateTeamInviteRequest createTeamInviteRequest = new CreateTeamInviteRequest(
                 team.getId(),

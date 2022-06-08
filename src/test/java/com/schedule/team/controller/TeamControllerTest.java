@@ -19,8 +19,8 @@ import com.schedule.team.repository.TeamColorRepository;
 import com.schedule.team.repository.UserRepository;
 import com.schedule.team.repository.team.PublicTeamRepository;
 import com.schedule.team.repository.team.TeamRepository;
-import com.schedule.team.service.team.CreateDefaultTeamService;
-import com.schedule.team.service.team.community.JoinTeamService;
+import com.schedule.team.service.team.DefaultTeamService;
+import com.schedule.team.service.team.PublicTeamService;
 import com.schedule.team.service.user.UserService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -43,14 +43,14 @@ public class TeamControllerTest extends IntegrationTest {
     private final ObjectMapper objectMapper;
     private final TeamRepository teamRepository;
     private final UserRepository userRepository;
-    private final JoinTeamService joinTeamService;
     private final TeamColorRepository teamColorRepository;
     private final String tokenHeaderName;
     private final String tokenValue;
     private final String defaultTeamColor;
     private final PublicTeamRepository publicTeamRepository;
     private final UserService userService;
-    private final CreateDefaultTeamService createDefaultTeamService;
+    private final DefaultTeamService createDefaultTeamService;
+    private final PublicTeamService publicTeamService;
 
     @Autowired
     public TeamControllerTest(
@@ -58,7 +58,6 @@ public class TeamControllerTest extends IntegrationTest {
             ObjectMapper objectMapper,
             TeamRepository teamRepository,
             UserRepository userRepository,
-            JoinTeamService joinTeamService,
             TeamColorRepository teamColorRepository,
             @Value("${app.jwt.token.headerName}")
                     String tokenHeaderName,
@@ -68,19 +67,21 @@ public class TeamControllerTest extends IntegrationTest {
                     String defaultTeamColor,
             PublicTeamRepository publicTeamRepository,
             UserService userService,
-            CreateDefaultTeamService createDefaultTeamService) {
+            DefaultTeamService defaultTeamService,
+            PublicTeamService publicTeamService
+    ) {
         this.mockMvc = mockMvc;
         this.objectMapper = objectMapper;
         this.teamRepository = teamRepository;
         this.userRepository = userRepository;
-        this.joinTeamService = joinTeamService;
+        this.publicTeamService = publicTeamService;
         this.teamColorRepository = teamColorRepository;
         this.tokenHeaderName = tokenHeaderName;
         this.tokenValue = tokenValue;
         this.defaultTeamColor = defaultTeamColor;
         this.publicTeamRepository = publicTeamRepository;
         this.userService = userService;
-        this.createDefaultTeamService = createDefaultTeamService;
+        this.createDefaultTeamService = defaultTeamService;
     }
 
     @AfterEach
@@ -144,8 +145,8 @@ public class TeamControllerTest extends IntegrationTest {
         String teamName = "test";
         LocalDate creationDate = LocalDate.of(10, 10, 10);
         PublicTeam team = teamRepository.save(new PublicTeam(teamName, creationDate, admin));
-        joinTeamService.join(team, admin);
-        joinTeamService.join(team, member);
+        publicTeamService.join(team, admin);
+        publicTeamService.join(team, member);
 
         String response = mockMvc
                 .perform(
@@ -178,12 +179,12 @@ public class TeamControllerTest extends IntegrationTest {
         String firstTeamName = "test";
         LocalDate firstTeamCreationDate = LocalDate.of(10, 10, 10);
         PublicTeam firstTeam = teamRepository.save(new PublicTeam(firstTeamName, firstTeamCreationDate, admin));
-        joinTeamService.join(firstTeam, admin);
+        publicTeamService.join(firstTeam, admin);
 
         String secondTeamName = "team2";
         LocalDate secondTeamCreationDate = LocalDate.of(11, 11, 11);
         PublicTeam secondTeam = teamRepository.save(new PublicTeam(secondTeamName, secondTeamCreationDate, admin));
-        joinTeamService.join(secondTeam, admin);
+        publicTeamService.join(secondTeam, admin);
 
         String response = mockMvc
                 .perform(
@@ -222,7 +223,7 @@ public class TeamControllerTest extends IntegrationTest {
         String teamName = "test";
         LocalDate creationDate = LocalDate.of(10, 10, 10);
         PublicTeam team = teamRepository.save(new PublicTeam(teamName, creationDate, admin));
-        joinTeamService.join(team, admin);
+        publicTeamService.join(team, admin);
 
         mockMvc
                 .perform(
@@ -241,7 +242,7 @@ public class TeamControllerTest extends IntegrationTest {
         String teamName = "test";
         LocalDate creationDate = LocalDate.of(10, 10, 10);
         PublicTeam team = teamRepository.save(new PublicTeam(teamName, creationDate, admin));
-        joinTeamService.join(team, admin);
+        publicTeamService.join(team, admin);
 
         String newName = "new name";
         String newColor = "new color";

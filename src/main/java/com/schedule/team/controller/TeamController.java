@@ -13,8 +13,9 @@ import com.schedule.team.model.response.CreateTeamResponse;
 import com.schedule.team.model.response.GetTeamByIdResponse;
 import com.schedule.team.model.response.GetTeamsResponse;
 import com.schedule.team.service.jwt.ExtractClaimsFromRequestService;
-import com.schedule.team.service.team.CreateDefaultTeamService;
-import com.schedule.team.service.team.community.*;
+import com.schedule.team.service.team.BuildTeamDescriptionDTOService;
+import com.schedule.team.service.team.DefaultTeamService;
+import com.schedule.team.service.team.PublicTeamService;
 import com.schedule.team.service.team_color.TeamColorService;
 import com.schedule.team.service.user.UserService;
 import com.schedule.team.validation.constraint.PublicTeamExistsByIdConstraint;
@@ -34,14 +35,11 @@ import java.util.List;
 @RequiredArgsConstructor
 public class TeamController {
     private final ExtractClaimsFromRequestService extractClaimsFromRequestService;
-    private final CreatePublicTeamService createPublicTeamService;
-    private final LeaveTeamService leaveTeamService;
-    private final UpdateTeamService updateTeamService;
     private final BuildTeamDescriptionDTOService buildTeamDescriptionDTOService;
-    private final GetPublicTeamByIdService getPublicTeamByIdService;
     private final TeamColorService teamColorService;
     private final UserService userService;
-    private final CreateDefaultTeamService createDefaultTeamService;
+    private final DefaultTeamService createDefaultTeamService;
+    private final PublicTeamService publicTeamService;
 
     @PostMapping("/default")
     public ResponseEntity<?> createDefaultTeam(
@@ -57,7 +55,7 @@ public class TeamController {
             HttpServletRequest request
     ) {
         User creator = extractClaimsFromRequestService.extractUser(request);
-        Team team = createPublicTeamService.create(
+        Team team = publicTeamService.create(
                 createTeamRequest.getName(),
                 LocalDate.now(),
                 creator
@@ -114,8 +112,8 @@ public class TeamController {
             @PublicTeamExistsByIdConstraint @PathVariable Long teamId,
             HttpServletRequest request
     ) {
-        leaveTeamService.leave(
-                getPublicTeamByIdService.get(teamId),
+        publicTeamService.leave(
+                publicTeamService.getById(teamId),
                 extractClaimsFromRequestService.extractUser(request)
         );
         return ResponseEntity.noContent().build();
@@ -128,10 +126,10 @@ public class TeamController {
             @RequestBody UpdateTeamRequest updateTeamRequest,
             HttpServletRequest request
     ) {
-        PublicTeam team = getPublicTeamByIdService.get(teamId);
+        PublicTeam team = publicTeamService.getById(teamId);
 
         if (updateTeamRequest.getNewName() != null) {
-            updateTeamService.update(team, updateTeamRequest.getNewName());
+            publicTeamService.update(team, updateTeamRequest.getNewName());
         }
 
         if (updateTeamRequest.getColor() != null) {

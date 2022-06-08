@@ -11,7 +11,7 @@ import com.schedule.team.model.response.GetTasksResponse;
 import com.schedule.team.repository.TaskRepository;
 import com.schedule.team.repository.team.TeamRepository;
 import com.schedule.team.service.task.BuildTaskDtoService;
-import com.schedule.team.service.team.CreateDefaultTeamService;
+import com.schedule.team.service.team.DefaultTeamService;
 import com.schedule.team.service.user.UserService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -49,7 +49,7 @@ public class GetTasksInRangeTest extends IntegrationTest {
     private List<Long> teamsIds;
     private Long privateTaskId;
     private final UserService userService;
-    private final CreateDefaultTeamService createDefaultTeamService;
+    private final DefaultTeamService createDefaultTeamService;
 
     @Autowired
     public GetTasksInRangeTest(
@@ -63,12 +63,12 @@ public class GetTasksInRangeTest extends IntegrationTest {
                     String tokenValue,
             BuildTaskDtoService buildTaskDtoService,
             UserService userService,
-            CreateDefaultTeamService createDefaultTeamService
+            DefaultTeamService defaultTeamService
     ) {
         this.mockMvc = mockMvc;
         this.taskRepository = taskRepository;
         this.userService = userService;
-        this.createDefaultTeamService = createDefaultTeamService;
+        this.createDefaultTeamService = defaultTeamService;
         this.teamRepository = teamRepository;
         this.objectMapper = objectMapper;
         this.tokenHeaderName = tokenHeaderName;

@@ -7,12 +7,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
-public class CreateDefaultTeamServiceImpl implements CreateDefaultTeamService {
+public class DefaultTeamServiceImpl implements DefaultTeamService {
     private final TeamRepository teamRepository;
     private final String defaultTeamColor;
 
     @Autowired
-    public CreateDefaultTeamServiceImpl(
+    public DefaultTeamServiceImpl(
             TeamRepository teamRepository,
             @Value("${app.team.color.default}")
                     String defaultTeamColor

@@ -11,8 +11,7 @@ import com.schedule.team.model.request.UpdateTeamInviteRequest;
 import com.schedule.team.model.response.CreateTeamInviteResponse;
 import com.schedule.team.model.response.GetTeamInvitesResponse;
 import com.schedule.team.service.jwt.ExtractClaimsFromRequestService;
-import com.schedule.team.service.team.community.JoinTeamService;
-import com.schedule.team.service.team.community.GetPublicTeamByIdService;
+import com.schedule.team.service.team.PublicTeamService;
 import com.schedule.team.service.team_invite.*;
 import com.schedule.team.service.user.UserService;
 import lombok.RequiredArgsConstructor;
@@ -31,18 +30,17 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class TeamInviteController {
     private final ExtractClaimsFromRequestService extractClaimsFromRequestService;
-    private final JoinTeamService joinTeamService;
     private final BuildTeamInviteDTOService buildTeamInviteDTOService;
-    private final GetPublicTeamByIdService getPublicTeamByIdService;
     private final TeamInviteService teamInviteService;
     private final UserService userService;
+    private final PublicTeamService publicTeamService;
 
     @PostMapping
     public ResponseEntity<CreateTeamInviteResponse> create(
             @Valid @RequestBody CreateTeamInviteRequest createTeamInviteRequest,
             HttpServletRequest request
     ) {
-        PublicTeam team = getPublicTeamByIdService.get(createTeamInviteRequest.getTeamId());
+        PublicTeam team = publicTeamService.getById(createTeamInviteRequest.getTeamId());
         User inviting = extractClaimsFromRequestService.extractUser(request);
 
         List<User> invitedList = createTeamInviteRequest
@@ -108,7 +106,7 @@ public class TeamInviteController {
         );
 
         if (TeamInviteStatus.ACCEPTED.equals(updateTeamInviteRequest.getStatus())) {
-            joinTeamService.join(
+            publicTeamService.join(
                     teamInvite.getTeam(),
                     teamInvite.getInvited()
             );
