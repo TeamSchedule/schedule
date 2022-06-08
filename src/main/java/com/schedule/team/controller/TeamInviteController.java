@@ -11,11 +11,9 @@ import com.schedule.team.model.request.UpdateTeamInviteRequest;
 import com.schedule.team.model.response.CreateTeamInviteResponse;
 import com.schedule.team.model.response.GetTeamInvitesResponse;
 import com.schedule.team.service.jwt.ExtractClaimsFromRequestService;
-import com.schedule.team.service.jwt.ExtractUserFromRequestService;
-import com.schedule.team.service.team.community.JoinTeamService;
-import com.schedule.team.service.team.community.GetPublicTeamByIdService;
+import com.schedule.team.service.team.PublicTeamService;
 import com.schedule.team.service.team_invite.*;
-import com.schedule.team.service.user.GetUserByIdService;
+import com.schedule.team.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,33 +30,28 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class TeamInviteController {
     private final ExtractClaimsFromRequestService extractClaimsFromRequestService;
-    private final ExtractUserFromRequestService extractUserFromRequestService;
-    private final GetUserByIdService getUserByIdService;
-    private final CreateTeamInviteService createTeamInviteService;
-    private final GetTeamInviteByIdService getTeamInviteByIdService;
-    private final UpdateTeamInviteService updateTeamInviteService;
-    private final JoinTeamService joinTeamService;
     private final BuildTeamInviteDTOService buildTeamInviteDTOService;
-    private final GetTeamInvitesService getTeamInvitesService;
-    private final GetPublicTeamByIdService getPublicTeamByIdService;
+    private final TeamInviteService teamInviteService;
+    private final UserService userService;
+    private final PublicTeamService publicTeamService;
 
     @PostMapping
     public ResponseEntity<CreateTeamInviteResponse> create(
             @Valid @RequestBody CreateTeamInviteRequest createTeamInviteRequest,
             HttpServletRequest request
     ) {
-        PublicTeam team = getPublicTeamByIdService.get(createTeamInviteRequest.getTeamId());
-        User inviting = extractUserFromRequestService.extract(request);
+        PublicTeam team = publicTeamService.getById(createTeamInviteRequest.getTeamId());
+        User inviting = extractClaimsFromRequestService.extractUser(request);
 
         List<User> invitedList = createTeamInviteRequest
                 .getInvitedIds()
                 .stream()
-                .map(getUserByIdService::get)
+                .map(userService::getById)
                 .toList();
         List<Long> ids = invitedList
                 .stream()
                 .map(
-                        invited -> createTeamInviteService.create(
+                        invited -> teamInviteService.create(
                                 team,
                                 inviting,
                                 invited,
@@ -81,12 +74,12 @@ public class TeamInviteController {
             @RequestParam(name = "teamId", required = false) Optional<Long> teamId,
             HttpServletRequest request
     ) {
-        Long userId = extractClaimsFromRequestService.extract(request).getId();
+        Long userId = extractClaimsFromRequestService.extractClaims(request).getId();
         List<TeamInvite> teamInvites;
         if (teamId.isPresent()) {
-            teamInvites = getTeamInvitesService.get(userId, criteria, status, teamId.get());
+            teamInvites = teamInviteService.get(userId, criteria, status, teamId.get());
         } else {
-            teamInvites = getTeamInvitesService.get(userId, criteria, status);
+            teamInvites = teamInviteService.get(userId, criteria, status);
         }
 
         List<TeamInviteDTO> teamInviteDTOS = teamInvites
@@ -105,15 +98,15 @@ public class TeamInviteController {
             @RequestBody UpdateTeamInviteRequest updateTeamInviteRequest,
             @PathVariable Long teamInviteId
     ) {
-        TeamInvite teamInvite = getTeamInviteByIdService.get(teamInviteId);
+        TeamInvite teamInvite = teamInviteService.getById(teamInviteId);
         // TODO: check if invited or inviting
-        updateTeamInviteService.patch(
+        teamInviteService.update(
                 teamInvite,
                 updateTeamInviteRequest.getStatus()
         );
 
         if (TeamInviteStatus.ACCEPTED.equals(updateTeamInviteRequest.getStatus())) {
-            joinTeamService.join(
+            publicTeamService.join(
                     teamInvite.getTeam(),
                     teamInvite.getInvited()
             );

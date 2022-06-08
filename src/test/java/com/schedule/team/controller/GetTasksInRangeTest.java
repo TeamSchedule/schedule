@@ -11,7 +11,8 @@ import com.schedule.team.model.response.GetTasksResponse;
 import com.schedule.team.repository.TaskRepository;
 import com.schedule.team.repository.team.TeamRepository;
 import com.schedule.team.service.task.BuildTaskDtoService;
-import com.schedule.team.service.user.CreateUserService;
+import com.schedule.team.service.team.DefaultTeamService;
+import com.schedule.team.service.user.UserService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,7 +37,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class GetTasksInRangeTest extends IntegrationTest {
     private final MockMvc mockMvc;
     private final TaskRepository taskRepository;
-    private final CreateUserService createUserService;
     private final TeamRepository teamRepository;
     private final ObjectMapper objectMapper;
     private final String tokenHeaderName;
@@ -48,23 +48,27 @@ public class GetTasksInRangeTest extends IntegrationTest {
     private List<Task> tasks;
     private List<Long> teamsIds;
     private Long privateTaskId;
+    private final UserService userService;
+    private final DefaultTeamService createDefaultTeamService;
 
     @Autowired
     public GetTasksInRangeTest(
             MockMvc mockMvc,
             TaskRepository taskRepository,
-            CreateUserService createUserService,
             TeamRepository teamRepository,
             ObjectMapper objectMapper,
             @Value("${app.jwt.token.headerName}")
                     String tokenHeaderName,
             @Value("${app.jwt.token.test}")
                     String tokenValue,
-            BuildTaskDtoService buildTaskDtoService
+            BuildTaskDtoService buildTaskDtoService,
+            UserService userService,
+            DefaultTeamService defaultTeamService
     ) {
         this.mockMvc = mockMvc;
         this.taskRepository = taskRepository;
-        this.createUserService = createUserService;
+        this.userService = userService;
+        this.createDefaultTeamService = defaultTeamService;
         this.teamRepository = teamRepository;
         this.objectMapper = objectMapper;
         this.tokenHeaderName = tokenHeaderName;
@@ -82,7 +86,7 @@ public class GetTasksInRangeTest extends IntegrationTest {
 
     @BeforeEach
     public void beforeEach() {
-        User author = createUserService.create(1L);
+        User author = userService.create(1L, createDefaultTeamService.create());
         PublicTeam team = teamRepository.save(new PublicTeam("test", LocalDate.now(), author));
 
         String taskName = "test";

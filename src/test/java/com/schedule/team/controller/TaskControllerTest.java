@@ -11,7 +11,8 @@ import com.schedule.team.model.request.PatchTaskRequest;
 import com.schedule.team.model.response.CreateTaskResponse;
 import com.schedule.team.repository.TaskRepository;
 import com.schedule.team.repository.team.TeamRepository;
-import com.schedule.team.service.user.CreateUserService;
+import com.schedule.team.service.team.DefaultTeamService;
+import com.schedule.team.service.user.UserService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -32,30 +33,34 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class TaskControllerTest extends IntegrationTest {
     private final MockMvc mockMvc;
     private final TaskRepository taskRepository;
-    private final CreateUserService createUserService;
     private final TeamRepository teamRepository;
     private final ObjectMapper objectMapper;
     private final String tokenHeaderName;
     private final String tokenValue;
+    private final UserService userService;
+    private final DefaultTeamService createDefaultTeamService;
 
     @Autowired
     public TaskControllerTest(
             MockMvc mockMvc,
             TaskRepository taskRepository,
-            CreateUserService createUserService, TeamRepository teamRepository,
+            UserService userService,
+            TeamRepository teamRepository,
             ObjectMapper objectMapper,
             @Value("${app.jwt.token.headerName}")
                     String tokenHeaderName,
             @Value("${app.jwt.token.test}")
-                    String tokenValue
+                    String tokenValue,
+            DefaultTeamService defaultTeamService
     ) {
         this.mockMvc = mockMvc;
         this.taskRepository = taskRepository;
-        this.createUserService = createUserService;
+        this.userService = userService;
         this.teamRepository = teamRepository;
         this.objectMapper = objectMapper;
         this.tokenHeaderName = tokenHeaderName;
         this.tokenValue = tokenValue;
+        this.createDefaultTeamService = defaultTeamService;
     }
 
     @AfterEach
@@ -65,8 +70,8 @@ public class TaskControllerTest extends IntegrationTest {
 
     @Test
     void createPublicTaskTest() throws Exception {
-        User author = createUserService.create(1L);
-        User assignee = createUserService.create(2L);
+        User author = userService.create(1L, createDefaultTeamService.create());
+        User assignee = userService.create(2L, createDefaultTeamService.create());
 
         PublicTeam team = teamRepository.save(new PublicTeam("test", LocalDate.now(), author));
 
@@ -107,7 +112,7 @@ public class TaskControllerTest extends IntegrationTest {
 
     @Test
     void createPrivateTaskTest() throws Exception {
-        User author = createUserService.create(1L);
+        User author = userService.create(1L, createDefaultTeamService.create());
 
         String taskName = "test";
         String taskDescription = "description";
@@ -147,8 +152,8 @@ public class TaskControllerTest extends IntegrationTest {
 
     @Test
     void getTaskByIdTest() throws Exception {
-        User author = createUserService.create(1L);
-        User assignee = createUserService.create(2L);
+        User author = userService.create(1L, createDefaultTeamService.create());
+        User assignee = userService.create(2L, createDefaultTeamService.create());
         PublicTeam team = teamRepository.save(new PublicTeam("test", LocalDate.now(), author));
 
         String taskName = "test";
@@ -192,8 +197,8 @@ public class TaskControllerTest extends IntegrationTest {
 
     @Test
     void deleteTaskTest() throws Exception {
-        User author = createUserService.create(1L);
-        User assignee = createUserService.create(2L);
+        User author = userService.create(1L, createDefaultTeamService.create());
+        User assignee = userService.create(2L, createDefaultTeamService.create());
         PublicTeam team = teamRepository.save(new PublicTeam("test", LocalDate.now(), author));
 
         String taskName = "test";
@@ -224,8 +229,8 @@ public class TaskControllerTest extends IntegrationTest {
 
     @Test
     void updateTaskTest() throws Exception {
-        User author = createUserService.create(1L);
-        User assignee = createUserService.create(2L);
+        User author = userService.create(1L, createDefaultTeamService.create());
+        User assignee = userService.create(2L, createDefaultTeamService.create());
         PublicTeam team = teamRepository.save(new PublicTeam("test", LocalDate.now(), author));
 
         Task task = taskRepository.save(

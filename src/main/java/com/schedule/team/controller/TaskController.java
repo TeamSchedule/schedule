@@ -8,11 +8,10 @@ import com.schedule.team.model.request.CreateTaskRequest;
 import com.schedule.team.model.request.PatchTaskRequest;
 import com.schedule.team.model.response.CreateTaskResponse;
 import com.schedule.team.model.response.GetTasksResponse;
-import com.schedule.team.service.jwt.ExtractUserFromRequestService;
+import com.schedule.team.service.jwt.ExtractClaimsFromRequestService;
 import com.schedule.team.service.task.*;
-import com.schedule.team.service.team.get.GetTeamByIdService;
-import com.schedule.team.service.team.get.GetTeamsListByIdService;
-import com.schedule.team.service.user.GetUserByIdService;
+import com.schedule.team.service.team.TeamService;
+import com.schedule.team.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -27,27 +26,22 @@ import java.util.List;
 @RequestMapping("/task")
 @RequiredArgsConstructor
 public class TaskController {
-    private final ExtractUserFromRequestService extractUserFromRequestService;
-    private final GetUserByIdService getUserByIdService;
-    private final CreateTaskService createTaskService;
-    private final GetTeamByIdService getTeamByIdService;
-    private final GetTaskByIdService getTaskByIdService;
-    private final GetTasksInRangeService getTasksInRangeService;
-    private final DeleteTaskByIdService deleteTaskByIdService;
-    private final UpdateTaskService updateTaskService;
+    private final ExtractClaimsFromRequestService extractClaimsFromRequestService;
+    private final TeamService teamService;
     private final BuildTaskDtoService buildTaskDtoService;
-    private final GetTeamsListByIdService getTeamsListByIdService;
+    private final TaskService taskService;
+    private final UserService userService;
 
     @PostMapping
     public ResponseEntity<CreateTaskResponse> create(
             @RequestBody CreateTaskRequest createTaskRequest,
             HttpServletRequest request
     ) {
-        User creator = extractUserFromRequestService.extract(request);
-        User assignee = getUserByIdService.get(createTaskRequest.getAssigneeId());
-        Team team = getTeamByIdService.get(createTaskRequest.getTeamId().orElse(creator.getDefaultTeam().getId()));
+        User creator = extractClaimsFromRequestService.extractUser(request);
+        User assignee = userService.getById(createTaskRequest.getAssigneeId());
+        Team team = teamService.getById(createTaskRequest.getTeamId().orElse(creator.getDefaultTeam().getId()));
 
-        Task task = createTaskService.create(
+        Task task = taskService.create(
                 createTaskRequest.getName(),
                 creator,
                 assignee,
@@ -68,7 +62,7 @@ public class TaskController {
     public ResponseEntity<TaskDTO> getById(
             @PathVariable Long taskId
     ) {
-        Task task = getTaskByIdService.get(taskId);
+        Task task = taskService.getById(taskId);
         return ResponseEntity.ok().body(
                 buildTaskDtoService.build(task)
         );
@@ -82,16 +76,16 @@ public class TaskController {
             @RequestParam("teams") List<Long> teamsIds,
             @RequestParam(value = "private", defaultValue = "false") boolean addPrivate
     ) {
-        User user = extractUserFromRequestService.extract(request);
+        User user = extractClaimsFromRequestService.extractUser(request);
         if (addPrivate) {
             teamsIds.add(user.getDefaultTeam().getId());
         }
-        List<Team> teams = getTeamsListByIdService.get(teamsIds);
+        List<Team> teams = teamService.getListByIds(teamsIds);
 
         return ResponseEntity.ok().body(
                 new GetTasksResponse(
-                        getTasksInRangeService
-                                .getTasksInRange(
+                        taskService
+                                .getInTimeRange(
                                         from,
                                         to,
                                         user.getId(),
@@ -108,7 +102,7 @@ public class TaskController {
     public ResponseEntity<?> delete(
             @PathVariable Long taskId
     ) {
-        deleteTaskByIdService.delete(taskId);
+        taskService.deleteById(taskId);
         return ResponseEntity.ok().build();
     }
 
@@ -117,8 +111,8 @@ public class TaskController {
             @RequestBody PatchTaskRequest patchTaskRequest,
             @PathVariable Long taskId
     ) {
-        updateTaskService.patchTask(
-                getTaskByIdService.get(taskId),
+        taskService.update(
+                taskService.getById(taskId),
                 patchTaskRequest.getName(),
                 patchTaskRequest.getDescription(),
                 patchTaskRequest.getExpirationDate(),

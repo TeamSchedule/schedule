@@ -1,6 +1,6 @@
 package com.schedule.team.validation.validator;
 
-import com.schedule.team.service.team.community.PublicTeamExistsByIdService;
+import com.schedule.team.service.team.PublicTeamService;
 import com.schedule.team.validation.constraint.PublicTeamExistsByIdConstraint;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -12,10 +12,10 @@ import javax.validation.ConstraintValidatorContext;
 @RequiredArgsConstructor
 public class PublicTeamExistsByIdValidator
         implements ConstraintValidator<PublicTeamExistsByIdConstraint, Long> {
-    private final PublicTeamExistsByIdService publicTeamExistsByIdService;
+    private final PublicTeamService publicTeamService;
 
     @Override
     public boolean isValid(Long publicTeamId, ConstraintValidatorContext context) {
-        return publicTeamExistsByIdService.exists(publicTeamId);
+        return publicTeamService.existsById(publicTeamId);
     }
 }
