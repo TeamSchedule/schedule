@@ -16,9 +16,10 @@ import com.schedule.team.model.response.GetTeamInvitesResponse;
 import com.schedule.team.repository.TeamColorRepository;
 import com.schedule.team.repository.TeamInviteRepository;
 import com.schedule.team.repository.team.TeamRepository;
+import com.schedule.team.service.team.CreateDefaultTeamService;
 import com.schedule.team.service.team.community.JoinTeamService;
 import com.schedule.team.service.team_invite.TeamInviteService;
-import com.schedule.team.service.user.CreateUserService;
+import com.schedule.team.service.user.UserService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -44,9 +45,10 @@ public class TeamInviteControllerTest extends IntegrationTest {
     private final TeamColorRepository teamColorRepository;
     private final String tokenHeaderName;
     private final String tokenValue;
-    private final CreateUserService createUserService;
     private final JoinTeamService joinTeamService;
     private final TeamInviteService teamInviteService;
+    private final UserService userService;
+    private final CreateDefaultTeamService createDefaultTeamService;
 
     @Autowired
     public TeamInviteControllerTest(
@@ -59,9 +61,10 @@ public class TeamInviteControllerTest extends IntegrationTest {
                     String tokenHeaderName,
             @Value("${app.jwt.token.test}")
                     String tokenValue,
-            CreateUserService createUserService,
             JoinTeamService joinTeamService,
-            TeamInviteService teamInviteService
+            TeamInviteService teamInviteService,
+            UserService userService,
+            CreateDefaultTeamService createDefaultTeamService
     ) {
         this.mockMvc = mockMvc;
         this.teamInviteRepository = teamInviteRepository;
@@ -70,9 +73,10 @@ public class TeamInviteControllerTest extends IntegrationTest {
         this.teamColorRepository = teamColorRepository;
         this.tokenHeaderName = tokenHeaderName;
         this.tokenValue = tokenValue;
-        this.createUserService = createUserService;
+        this.userService = userService;
         this.joinTeamService = joinTeamService;
         this.teamInviteService = teamInviteService;
+        this.createDefaultTeamService = createDefaultTeamService;
     }
 
     @AfterEach
@@ -82,12 +86,12 @@ public class TeamInviteControllerTest extends IntegrationTest {
 
     @Test
     void createTeamInviteTest() throws Exception {
-        User inviting = createUserService.create(1L);
+        User inviting = userService.create(1L, createDefaultTeamService.create());
         PublicTeam team = teamRepository.save(new PublicTeam(
                 "team", LocalDate.now(), inviting
         ));
 
-        User invited = createUserService.create(2L);
+        User invited = userService.create(2L, createDefaultTeamService.create());
         CreateTeamInviteRequest createTeamInviteRequest = new CreateTeamInviteRequest(
                 team.getId(),
                 List.of(invited.getId())
@@ -121,12 +125,12 @@ public class TeamInviteControllerTest extends IntegrationTest {
 
     @Test
     void updateTeamInviteAcceptedTest() throws Exception {
-        User inviting = createUserService.create(1L);
+        User inviting = userService.create(1L, createDefaultTeamService.create());
         PublicTeam team = teamRepository.save(new PublicTeam(
                 "team", LocalDate.now(), inviting
         ));
 
-        User invited = createUserService.create(2L);
+        User invited = userService.create(2L, createDefaultTeamService.create());
         TeamInvite teamInvite = teamInviteRepository.save(new TeamInvite(
                 team,
                 invited,
@@ -153,8 +157,8 @@ public class TeamInviteControllerTest extends IntegrationTest {
 
     @Test
     void getOpenTeamInvitesTest() throws Exception {
-        User inviting = createUserService.create(1L);
-        User invited = createUserService.create(2L);
+        User inviting = userService.create(1L, createDefaultTeamService.create());
+        User invited = userService.create(2L, createDefaultTeamService.create());
 
         PublicTeam firstTeam = teamRepository.save(new PublicTeam("test", LocalDate.of(10, 10, 10), inviting));
         PublicTeam secondTeam = teamRepository.save(new PublicTeam("test2", LocalDate.of(10, 10, 10), inviting));
@@ -199,8 +203,8 @@ public class TeamInviteControllerTest extends IntegrationTest {
 
     @Test
     void getOpenTeamInviteFromTeamTest() throws Exception {
-        User invited = createUserService.create(1L);
-        User inviting = createUserService.create(1L);
+        User invited = userService.create(1L, createDefaultTeamService.create());
+        User inviting = userService.create(2L, createDefaultTeamService.create());
 
         PublicTeam firstTeam = teamRepository.save(new PublicTeam("test", LocalDate.of(10, 10, 10), inviting));
         PublicTeam secondTeam = teamRepository.save(new PublicTeam("test2", LocalDate.of(10, 10, 10), inviting));
@@ -238,12 +242,12 @@ public class TeamInviteControllerTest extends IntegrationTest {
 
     @Test
     void createTeamInviteBadRequestUserIsAlreadyAMemberTest() throws Exception {
-        User inviting = createUserService.create(1L);
+        User inviting = userService.create(1L, createDefaultTeamService.create());
         PublicTeam team = teamRepository.save(new PublicTeam(
                 "team", LocalDate.now(), inviting
         ));
 
-        User invited = createUserService.create(2L);
+        User invited = userService.create(2L, createDefaultTeamService.create());
         joinTeamService.join(team, invited);
 
         CreateTeamInviteRequest createTeamInviteRequest = new CreateTeamInviteRequest(
@@ -278,12 +282,12 @@ public class TeamInviteControllerTest extends IntegrationTest {
 
     @Test
     void createTeamInviteBadRequestUserIsAlreadyInvitedTest() throws Exception {
-        User inviting = createUserService.create(1L);
+        User inviting = userService.create(1L, createDefaultTeamService.create());
         PublicTeam team = teamRepository.save(new PublicTeam(
                 "team", LocalDate.now(), inviting
         ));
 
-        User invited = createUserService.create(2L);
+        User invited = userService.create(2L, createDefaultTeamService.create());
         teamInviteService.create(
                 team, inviting, invited, LocalDateTime.now()
         );

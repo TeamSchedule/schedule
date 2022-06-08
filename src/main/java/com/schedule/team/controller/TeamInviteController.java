@@ -14,7 +14,7 @@ import com.schedule.team.service.jwt.ExtractClaimsFromRequestService;
 import com.schedule.team.service.team.community.JoinTeamService;
 import com.schedule.team.service.team.community.GetPublicTeamByIdService;
 import com.schedule.team.service.team_invite.*;
-import com.schedule.team.service.user.GetUserByIdService;
+import com.schedule.team.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,11 +31,11 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class TeamInviteController {
     private final ExtractClaimsFromRequestService extractClaimsFromRequestService;
-    private final GetUserByIdService getUserByIdService;
     private final JoinTeamService joinTeamService;
     private final BuildTeamInviteDTOService buildTeamInviteDTOService;
     private final GetPublicTeamByIdService getPublicTeamByIdService;
     private final TeamInviteService teamInviteService;
+    private final UserService userService;
 
     @PostMapping
     public ResponseEntity<CreateTeamInviteResponse> create(
@@ -48,7 +48,7 @@ public class TeamInviteController {
         List<User> invitedList = createTeamInviteRequest
                 .getInvitedIds()
                 .stream()
-                .map(getUserByIdService::get)
+                .map(userService::getById)
                 .toList();
         List<Long> ids = invitedList
                 .stream()

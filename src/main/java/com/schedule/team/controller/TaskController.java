@@ -12,7 +12,7 @@ import com.schedule.team.service.jwt.ExtractClaimsFromRequestService;
 import com.schedule.team.service.task.*;
 import com.schedule.team.service.team.get.GetTeamByIdService;
 import com.schedule.team.service.team.get.GetTeamsListByIdService;
-import com.schedule.team.service.user.GetUserByIdService;
+import com.schedule.team.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -28,11 +28,11 @@ import java.util.List;
 @RequiredArgsConstructor
 public class TaskController {
     private final ExtractClaimsFromRequestService extractClaimsFromRequestService;
-    private final GetUserByIdService getUserByIdService;
     private final GetTeamByIdService getTeamByIdService;
     private final BuildTaskDtoService buildTaskDtoService;
     private final GetTeamsListByIdService getTeamsListByIdService;
     private final TaskService taskService;
+    private final UserService userService;
 
     @PostMapping
     public ResponseEntity<CreateTaskResponse> create(
@@ -40,7 +40,7 @@ public class TaskController {
             HttpServletRequest request
     ) {
         User creator = extractClaimsFromRequestService.extractUser(request);
-        User assignee = getUserByIdService.get(createTaskRequest.getAssigneeId());
+        User assignee = userService.getById(createTaskRequest.getAssigneeId());
         Team team = getTeamByIdService.get(createTaskRequest.getTeamId().orElse(creator.getDefaultTeam().getId()));
 
         Task task = taskService.create(
